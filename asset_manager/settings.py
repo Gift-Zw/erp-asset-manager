@@ -141,5 +141,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-mail.outlook.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'kenac-asset-manager@outlook.com'
-EMAIL_HOST_PASSWORD = '@Kenac2023'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
