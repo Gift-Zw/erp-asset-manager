@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'navbar.html' %}
+
+        <div class="container-fluid">
+                {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">Disposed Assets</h2>
+              <p class="card-text">This is a table containing all assets that have been disposed.</p>
+{#              <div style="margin-left: 75%">#}
+{#                                 {% if request.user.is_admin %}#}
+{##}
+{#              <a href="{% url 'vendors-csv' %}">#}
+{#                 <button class="btn btn-success">Export CSV</button>#}
+{#             </a>#}
+{#                </div>#}
+{#            {% endif %}#}
+                <div class="row my-4">
+                <!-- Small table -->
+                <div class="col-md-12">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <!-- table -->
+                      <table class="table datatables" id="dataTable-1">
+                        <thead>
+                          <tr>
+                            <th><strong>#</strong></th>
+                            <th><strong>Name</strong></th>
+                            <th><strong>Purchase Value</strong></th>
+                            <th><strong>Vendor</strong></th>
+                            <th><strong>Category</strong></th>
+                            <th><strong>Identification</strong></th>
+                            <th><strong>Action</strong></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        {% for asset in object_list %}
+                          <tr>
+                            <td>{{ asset.asset_id }}</td>
+                            <td>{{ asset.name }}</td>
+                            <td>${{ asset.purchase_value }}</td>
+                            <td>{{ asset.vendor }}</td>
+                              <td>
+                               {% if asset.vehicle_details.mvd_id %}
+                              Motor Vehicle
+                              {% elif asset.fixture_details.ffd_id%}
+                              Fixture and Fittings
+                              {% elif asset.office_details.oed_id%}
+                               Office Equipment
+                              {% elif asset.datacenter_details.dcd_id%}
+                              Datacenter Equipment
+                              {% elif asset.computer_details.ced_id%}
+                              Computer Equipment
+                              {% endif %}
+                              </td>
+                            <td>{{ asset.vehicle_details.reg_number }}{{ asset.computer_details.serial_number }}
+                            {{ asset.datacenter_details.serial_number }} {{ asset.office_details.asset_tag }}
+                                {{ asset.fixture_details.asset_tag }}
+                            </td>
+                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#">Edit</a>
+                                <a class="dropdown-item" href="#">Remove</a>
+                              </div>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+              </div> <!-- end section -->
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+        {% include 'scripts.html' %}
+
+            <script>
+      $('#dataTable-1').DataTable(
+      {
+        autoWidth: true,
+        "lengthMenu": [
+          [16, 32, 64, -1],
+          [16, 32, 64, "All"]
+        ]
+      });
+    </script>
+        <script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+    <script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+
+{% endblock content %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'navbar.html' %}
+
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">Asset Transfers</h2>
+              <p class="card-text">This is a table containing all asset transfers done at the company </p>
+              <div class="row my-4">
+                <!-- Small table -->
+                <div class="col-md-12">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <!-- table -->
+                      <table class="table datatables" id="dataTable-1">
+                        <thead>
+                          <tr>
+                            <th><strong>#</strong></th>
+                            <th><strong>Asset Name</strong></th>
+                            <th><strong>Category</strong></th>
+                            <th><strong>Identification</strong></th>
+                            <th><strong>From</strong></th>
+                            <th><strong>To</strong></th>
+                            <th><strong>Date</strong></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        {% for transfer in object_list %}
+                          <tr>
+                            <td>{{ transfer.transfer_id }}</td>
+                            <td>{{ transfer.asset.name }}</td>
+                            <td>
+                             {% if transfer.asset.vehicle_details.mvd_id %}
+                              Motor Vehicle
+                              {% elif transfer.asset.fixture_details.ffd_id%}
+                              Fixture and Fittings
+                              {% elif transfer.asset.office_details.oed_id%}
+                               Office Equipment
+                              {% elif transfer.asset.datacenter_details.dcd_id%}
+                              Datacenter Equipment
+                              {% elif transfer.asset.computer_details.ced_id%}
+                              Computer Equipment
+                              {% endif %}
+                            </td>
+                            <td>
+                                {{ transfer.asset.vehicle_details.reg_number }}{{ transfer.asset.computer_details.serial_number }}
+                            {{ transfer.asset.datacenter_details.serial_number }} {{ transfer.asset.office_details.asset_tag }}
+                                {{ transfer.asset.fixture_details.asset_tag }}
+                            </td>
+                          <td>{{ transfer.transfer_from}}</td>
+                            <td>{{ transfer.transfer_to }}</td>
+                            <td>{{ transfer.created_date }}</td>
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+              </div> <!-- end section -->
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+
+    {% include 'scripts.html' %}
+
+            <script>
+      $('#dataTable-1').DataTable(
+      {
+        autoWidth: true,
+        "lengthMenu": [
+          [16, 32, 64, -1],
+          [16, 32, 64, "All"]
+        ]
+      });
+    </script>
+        <script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+    <script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+
+{% endblock content %}

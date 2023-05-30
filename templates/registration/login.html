@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+
+<div class="wrapper vh-100">
+      <div class="row align-items-center h-100">
+        <form class="col-lg-3 col-md-4 col-10 mx-auto text-center" method="POST">
+            {% csrf_token %}
+            <img src="{% static 'assets/images/logo.png' %}">
+          <h1 class="h6 mb-3">Sign into Asset Management System</h1>
+
+            {{ form|crispy }}
+
+{#          <div class="form-group">#}
+{#            <label for="inputEmail" class="sr-only">Email address</label>#}
+{#            <input type="email" id="inputEmail" class="form-control form-control-lg" placeholder="Email address" required="" autofocus="">#}
+{#          </div>#}
+{#          <div class="form-group">#}
+{#            <label for="inputPassword" class="sr-only">Password</label>#}
+{#            <input type="password" id="inputPassword" class="form-control form-control-lg" placeholder="Password" required="">#}
+{#          </div>#}
+          <button class="btn btn-lg btn-primary btn-block" type="submit">Log In</button>
+          <p class="mt-5 mb-3 text-muted">© 2023</p>
+        </form>
+      </div>
+    </div>
+
+
+{% endblock content %}

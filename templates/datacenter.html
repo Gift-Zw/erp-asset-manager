@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'navbar.html' %}
+
+        <div class="container-fluid">
+                {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">Data Center</h2>
+              <p class="card-text">This is a table containing all the datacenter equipment available at the company</p>
+                {% if request.user.is_admin %}
+                <div style="margin-left: 75%">
+                <a href="{% url 'create-datacenter-equip' %}" style="margin-right: 10px;">
+                 <button class="btn btn-primary">Add Asset</button>
+             </a>
+
+              <a href="{% url 'datacenter-equip-csv' %}">
+                 <button class="btn btn-success">Export CSV</button>
+             </a>
+                </div>
+            {% endif %}
+                <div class="row my-4">
+                <!-- Small table -->
+                <div class="col-md-12">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <!-- table -->
+                        <table class="table datatables" id="dataTable-1">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th><strong>Name</strong></th>
+                            <th><strong>Serial Number</strong></th>
+                             <th><strong>GRV Number</strong></th>
+                            <th><strong>Purchase Value</strong></th>
+                            <th><strong>Current Valuation</strong></th>
+                            <th><strong>Warranty Status</strong></th>
+                            <th><strong>Vendor</strong></th>
+                            <th><strong>Date Purchased</strong></th>
+                            <th><strong>Assignee</strong></th>
+                              {% if request.user.is_admin %}
+                            <th><strong>Action</strong></th>
+                              {% endif %}
+                          </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        {% for equip in object_list %}
+                          <tr>
+                            <td>{{ equip.dcd_id }}</td>
+                            <td>{{ equip.asset.name }}</td>
+                            <td>{{ equip.serial_number }}</td>
+                          <td>{{ equip.asset.grv_number }}</td>
+                            <td>${{ equip.asset.purchase_value }}</td>
+                             <td>${{ equip.current_value }}</td>
+                              <td>
+                                  {% if equip.warranty_days > 30 %}
+                                    <h5><span class="badge badge-success"> Active </span></h5>
+                                  {% elif equip.warranty_days < 30 and equip.warranty_days >= 0  %}
+                                     <h5><span class="badge badge-warning">Critical</span></h5>
+                                  {% else %}
+                                      <h5><span class="badge badge-danger">Expired</span></h5>
+                                  {% endif %}
+                              </td>
+                            <td>{{ equip.asset.vendor }}</td>
+                            <td>{{ equip.asset.date_purchased }}</td>
+                            <td>
+                              {% if equip.asset.assignee %}
+                                  {{ equip.asset.assignee.full_name }}
+                                  {% else %}
+                                  Unassigned
+                              {% endif %}
+                          </td>
+                          {% if request.user.is_admin %}
+                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                               <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="{{ equip.edit_datacenter_equipment }}">View</a>
+                                <a class="dropdown-item" href="{% url 'create-repair' equip.asset.asset_id %}">Repair</a>
+                                <a class="dropdown-item" href="{% url 'dispose-asset' equip.asset.asset_id %}">Dispose</a>
+                              </div>
+                            </td>
+                            {% endif %}
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+              </div> <!-- end section -->
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/simplebar.min.js' %}"></script>
+    <script src='{% static 'js/daterangepicker.js' %}'></script>
+    <script src='{% static 'js/jquery.stickOnScroll.js' %}'></script>
+    <script src="{% static 'js/tinycolor-min.js' %}"></script>
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+    <script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+    <script>
+      $('#dataTable-1').DataTable(
+      {
+        autoWidth: true,
+        "lengthMenu": [
+          [16, 32, 64, -1],
+          [16, 32, 64, "All"]
+        ]
+      });
+    </script>
+    <script src="{% static 'js/apps.js' %}"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+{% endblock content %}

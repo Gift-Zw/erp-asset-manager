@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'navbar.html' %}
+
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">Users</h2>
+              <p class="card-text">This is a table containing all the users registered in the system</p>
+              <div class="row my-4">
+                <!-- Small table -->
+                <div class="col-md-12">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <!-- table -->
+                      <table class="table datatables" id="dataTable-1">
+                        <thead>
+                          <tr>
+                            <th></th>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Department</th>
+                            <th>Company</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input">
+                                <label class="custom-control-label"></label>
+                              </div>
+                            </td>
+                            <td>427</td>
+                            <td>Clark Dennis</td>
+                            <td>(239) 172-7907</td>
+                            <td>Human Resources</td>
+                            <td>Finale</td>
+                            <td>Ap #978-3375 Adipiscing Av.</td>
+                            <td>High Level</td>
+                            <td>Sep 16, 2020</td>
+                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#">Edit</a>
+                                <a class="dropdown-item" href="#">Remove</a>
+                                <a class="dropdown-item" href="#">Assign</a>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+              </div> <!-- end section -->
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+
+{% endblock content %}

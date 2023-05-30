@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+    <div class="wrapper">
+            {% include 'navbar.html' %}
+      <main role="main" class="main-content">
+
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <div class="row align-items-center mb-2">
+                <div class="col">
+                  <h2 class="h5 page-title">Welcome {{ request.user.full_name }}</h2>
+                </div>
+                <div class="col-auto">
+                  <form class="form-inline">
+                    <div class="form-group d-none d-lg-inline">
+                      <label for="reportrange" class="sr-only">Date Ranges</label>
+                      <div id="reportrange" class="px-2 py-2 text-muted">
+                        <span class="small"></span>
+                      </div>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+              <div class="row items-align-baseline">
+                <div class="col-md-12 col-lg-4">
+                  <div class="card shadow eq-card mb-4">
+                    <div class="card shadow mb-4">
+                    <div class="card-header">
+                     <h5> <strong class="card-title mb-0">Warranty Status</strong></h5>
+                    </div>
+                    <div class="card-body text-center">
+                      <div id="warrantyChart"></div>
+                    </div> <!-- /.card-body -->
+                  </div>
+                  </div> <!-- .card -->
+                </div> <!-- .col -->
+                  <div class="col-md-12 col-lg-3">
+                  <div class="card shadow eq-card mb-4">
+                    <div class="card-body mb-n3">
+                      <div class="row items-align-baseline h-80">
+                        <div class="col-md-12 my-3 text-center">
+                          <p class="mb-0"><strong class="mb-0 text-uppercase text-regular">Total Assets</strong></p>
+                          <h3 class="">  {{ assets_sum }}</h3>
+                        </div>
+                        <div class="col-md-12 border-top py-3 text-center">
+                          <p class="mb-1"><strong class="text-uppercase text-regular">Unassigned Assets</strong></p>
+                          <h3 class="mb-0">{{ unassigned_assets }}</h3>
+                        </div> <!-- .col -->
+                        <div class="col-md-12 border-top py-3 text-center">
+                        <a href="{% url 'disposed' %}">
+                            <p class="mb-1"><strong class="text-uppercase text-regular">Disposed Assets</strong></p>
+                          <h3 class="mb-0">{{ disposed_assets }}</h3>
+                        </a>
+                        </div><!-- .col -->
+                      </div>
+
+                    </div> <!-- .card-body -->
+                  </div> <!-- .card -->
+                </div> <!-- .col -->
+                 <div class="col-12 col-md-5">
+                  <div class="card shadow mb-4">
+                    <div class="card-header">
+                     <h4> <strong class="card-title mb-0">Asset Valuations</strong></h4><span>(Total : ${{ total_value }})</span>
+                    </div>
+                    <div class="card-body text-center">
+                      <div id="donutChart1"></div>
+                    </div> <!-- /.card-body -->
+                  </div> <!-- /.card -->
+                </div> <!-- /. co
+                  </div>  /.card -->
+                </div> <!-- /.
+                  </div>  /.card -->
+                </div> <!-- /. col -->
+                <!-- Recent Activity -->
+                 <!-- / .col-md-6 -->
+                <!-- Striped rows -->
+                <div class="col-md-12 col-lg-12">
+                  <div class="card shadow">
+                    <div class="card-header">
+                      <strong class="card-title">Recent Asset Transfers</strong>
+                      <a class="float-right small text-muted" href="{% url 'transfers' %}">View all</a>
+                    </div>
+                    <div class="card-body my-n2">
+                      <table class="table table-striped table-hover table-borderless">
+                        <thead>
+                          <tr>
+                            <th><strong>#</strong></th>
+                            <th><strong>Name</strong></th>
+                            <th><strong>Category</strong></th>
+                            <th><strong>Identification</strong></th>
+                            <th><strong>To</strong></th>
+                            <th><strong>From</strong></th>
+                              <th><strong>Date</strong></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                             {% for transfer in transfers %}
+                          <tr>
+                            <td>{{ transfer.transfer_id }}</td>
+                            <td>{{ transfer.asset.name }}</td>
+                            <td>
+                             {% if transfer.asset.vehicle_details.mvd_id %}
+                              Motor Vehicle
+                              {% elif transfer.asset.fixture_details.ffd_id%}
+                              Fixture and Fittings
+                              {% elif transfer.asset.office_details.oed_id%}
+                               Office Equipment
+                              {% elif transfer.asset.datacenter_details.dcd_id%}
+                              Datacenter Equipment
+                              {% elif transfer.asset.computer_details.ced_id%}
+                              Computer Equipment
+                              {% endif %}
+                            </td>
+                            <td>
+                                {{ transfer.asset.vehicle_details.reg_number }}{{ transfer.asset.computer_details.serial_number }}
+                            {{ transfer.asset.datacenter_details.serial_number }} {{ transfer.asset.office_details.asset_tag }}
+                                {{ transfer.asset.fixture_details.asset_tag }}
+                            </td>
+                            <td>{{ transfer.transfer_to }}</td>
+                            <td>{{ transfer.transfer_from}}</td>
+                            <td>{{ transfer.created_date }}</td>
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+      </main>
+
+        <script src="{% static 'js/apexcharts.min.js' %}"></script>
+    <script src="{% static 'js/apexcharts.custom.js' %}"></script>
+        <script src="{% static 'js/tinycolor-min.js' %}"></script>
+    <script src="{% static 'js/Chart.min.js' %}"></script>
+    <script>
+
+
+
+        var base = {
+        defaultFontFamily: "Overpass, sans-serif",
+        primaryColor: "#1b68ff",
+        secondaryColor: "#4f4f4f",
+        successColor: "#3ad29f",
+        warningColor: "#ffc107",
+        infoColor: "#17a2b8",
+        dangerColor: "#dc3545",
+        darkColor: "#343a40",
+        lightColor: "#f2f3f6",
+    },
+    extend = {
+        primaryColorLight: tinycolor(base.primaryColor).lighten(10).toString(),
+        primaryColorLighter: tinycolor(base.primaryColor).lighten(30).toString(),
+        primaryColorDark: tinycolor(base.primaryColor).darken(10).toString(),
+        primaryColorDarker: tinycolor(base.primaryColor).darken(30).toString(),
+    },
+        chartColors = [base.primaryColor, base.successColor, "#6f42c1", extend.primaryColorLighter],
+    colors = { bodyColor: "#6c757d", headingColor: "#495057", borderColor: "#e9ecef", backgroundColor: "#f8f9fa", mutedColor: "#adb5bd", chartTheme: "light" },
+    darkColor = { bodyColor: "#adb5bd", headingColor: "#e9ecef", borderColor: "#212529", backgroundColor: "#495057", mutedColor: "#adb5bd", chartTheme: "dark" },
+    curentTheme = localStorage.getItem("mode")
+
+
+
+         var donutchart,
+    donutChartOptions = {
+        series: [{{ vehicles_value }}, {{ computer_value }}, {{ datacenter_value }}, {{ office_value }}, {{ fittings_value }}],
+        chart: { type: "donut", height: 305, zoom: { enabled: !1 } },
+        theme: { mode: colors.chartTheme },
+        plotOptions: { pie: { donut: { size: "40%" }, expandOnClick: !1 } },
+        labels: ["Motor Vehicles", "Computer Equipment", "Datacenter Equipment", "Office Equipment", "Fixture and Fittings"],
+        legend: {
+            position: "bottom",
+            fontFamily: base.defaultFontFamily,
+            fontWeight: 400,
+            labels: { colors: colors.mutedColor, useSeriesColors: !1 },
+            horizontalAlign: "left",
+            fontFamily: base.defaultFontFamily,
+            markers: { width: 10, height: 10, strokeWidth: 0, strokeColor: "#fff", radius: 6 },
+            itemMargin: { horizontal: 10, vertical: 2 },
+            onItemClick: { toggleDataSeries: !0 },
+            onItemHover: { highlightDataSeries: !0 },
+        },
+        stroke: { colors: [colors.borderColor], width: 1 },
+        fill: { opacity: 1, colors: ['#1b68ff', '#3ad29f', '#fd7e14', '#dc3545', '#6f42c1'] },
+    },
+    donutchartCtn = document.querySelector("#donutChart1");
+donutchartCtn && (donutchart = new ApexCharts(donutchartCtn, donutChartOptions)).render();
+
+  var warrantyChart,
+    warrantyChartOptions = {
+        series: [{{ warranty_active }}, {{ warranty_critical }}, {{ warranty_expired }}],
+        chart: { type: "donut", height: 305, zoom: { enabled: !1 } },
+        theme: { mode: colors.chartTheme },
+        plotOptions: { pie: { donut: { size: "40%" }, expandOnClick: !1 } },
+        labels: ["Active", "Critical", "Out of warranty"],
+        legend: {
+            position: "bottom",
+            fontFamily: base.defaultFontFamily,
+            fontWeight: 400,
+            labels: { colors: colors.mutedColor, useSeriesColors: !1 },
+            horizontalAlign: "left",
+            fontFamily: base.defaultFontFamily,
+            markers: { width: 10, height: 10, strokeWidth: 0, strokeColor: "#fff", radius: 6 },
+            itemMargin: { horizontal: 10, vertical: 2 },
+            onItemClick: { toggleDataSeries: !0 },
+            onItemHover: { highlightDataSeries: !0 },
+        },
+        stroke: { colors: [colors.borderColor], width: 1 },
+        fill: { opacity: 1, colors: ['#1b68ff', '#3ad29f', '#fd7e14', '#dc3545', '#6f42c1'] },
+    },
+    warrantyChartCtn = document.querySelector("#warrantyChart");
+warrantyChartCtn && (warrantyChart = new ApexCharts(warrantyChartCtn, warrantyChartOptions)).render();
+
+</script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+
+</div>
+     {% include 'scripts.html' %}
+
+{% endblock content %}

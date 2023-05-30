@@ -1,0 +1,114 @@
+{% include 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="wrapper">
+    {% include 'navbar.html' %}
+ <main role="main" class="main-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+                         {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+            <div class="col-12">
+              <h2 class="page-title">Add Office Equipment</h2>
+              <p class="text-muted">This is a form to add office equipment. Make sure you provide all the required fields. Asset tag must to be unique.</p>
+              <div class="card-deck">
+              </div> <!-- / .card-desk-->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card shadow mb-4">
+                    <div class="card-header">
+                      <strong class="card-title">All fields are required.</strong>
+                    </div>
+                    <div class="card-body">
+                      <form method="post">
+                          {% csrf_token %}
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            {{ form.asset.name.label_tag }}
+                            {{ form.asset.name }}
+                          </div>
+                            <div class="form-group col-md-5">
+                            <label for="assetTag">Asset Tag</label>
+                            {{ form.office.asset_tag }}
+                             {% for error in form.office.asset_tag.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                          </div>
+                        </div>
+                          <div class="form-row">
+                            <div class="form-group col-md-5">
+                            <label for="assetRoom">Room</label>
+                            {{ form.office.room }}
+                          </div>
+                          </div>
+                        <div class="form-row">
+                           <div class="form-group col-md-3">
+                            <label for="inputValue">Purchase Value</label>
+                            {{ form.asset.purchase_value }}
+                          </div>
+                          </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                          <label for="inputCondition">Condition</label>
+                          {{ form.asset.condition }}
+                        </div>
+                        <div class="form-group mb-3">
+                        <label for="example-date">Date Purchased</label>
+                            {{ form.asset.date_purchased }}
+                            {% for error in form.asset.date_purchased.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                      </div>
+                        </div>
+                          <div class="form-row">
+                          <div class="form-group col-md-6">
+                            <label for="inputCurrency">GRV Number</label>
+                            {{ form.asset.grv_number }}
+                               {% for error in form.asset.grv_number.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                          </div>
+                          </div>
+
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            <label for="inputVendor">Vendor</label>
+                            {{ form.asset.vendor }}
+                          </div>
+                        </div>
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            <label for="inputAssignee">Assignee</label>
+                            {{ form.asset.assignee }}
+                          </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Office Equipment</button>
+                      </form>
+                    </div> <!-- /. card-body -->
+                  </div> <!-- /. card -->
+                </div> <!-- /. col -->
+              </div> <!-- /. end-section -->
+             </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+
+      </main>
+
+</div>
+
+{% include 'scripts.html' %}
+
+{% endblock content %}

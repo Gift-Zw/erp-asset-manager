@@ -1,0 +1,77 @@
+{% include 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="wrapper">
+    {% include 'navbar.html' %}
+ <main role="main" class="main-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="page-title">Edit Vendor Details</h2>
+              <p class="text-muted">This is a form to edit vendor details.</p>
+              <div class="card-deck">
+              </div> <!-- / .card-desk-->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card shadow mb-4">
+                    <div class="card-header">
+                      <strong class="card-title">All fields are required.</strong>
+                    </div>
+                    <div class="card-body">
+                      <form method="POST">
+                          {% csrf_token %}
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                          </div>
+                          <div class="form-group col-md-6">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                          </div>
+                        </div>
+                        <div class="form-row">
+                           <div class="form-group col-md-6">
+                            <label for="inputPhone">Phone</label>
+                            {{ form.phone }}
+                          </div>
+                          </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-10">
+                          <label for="inputAddress2">Address Line</label>
+                          {{ form.address_line }}
+                        </div>
+                        </div>
+
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            <label for="inputCity">City</label>
+                            {{ form.city }}
+                          </div>
+                        </div>
+                          <div class="form-row">
+                          <div class="form-group col-md-4">
+                            <label for="inputCountry">Country</label>
+                            {{ form.country }}
+                          </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Vendor Details</button>
+                      </form>
+                    </div> <!-- /. card-body -->
+                  </div> <!-- /. card -->
+                </div> <!-- /. col -->
+              </div> <!-- /. end-section -->
+             </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main>
+
+</div>
+
+{% include 'scripts.html' %}
+
+
+{% endblock content %}

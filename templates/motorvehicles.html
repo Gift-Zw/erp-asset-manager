@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'navbar.html' %}
+
+        <div class="container-fluid">
+                {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">Motor Vehicles</h2>
+                <p class="card-text">This is a table containing all the motor vehicles available at the company</p>
+            {% if request.user.is_admin %}
+                <div style="margin-left: 75%">
+                <a href="{% url 'create-motor-vehicle' %}" style="margin-right: 10px;">
+                 <button class="btn btn-primary">Add Vehicle</button>
+             </a>
+
+              <a href="{% url 'motor-vehicles-csv' %}">
+                 <button class="btn btn-success">Export CSV</button>
+             </a>
+                </div>
+            {% endif %}
+                <div class="row my-4">
+                <!-- Small table -->
+                <div class="col-md-12">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <!-- table -->
+                      <table class="table datatables" id="dataTable-1">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th><strong>Name</strong></th>
+                            <th><strong>Reg Number</strong></th>
+                            <th><strong>Engine Number</strong></th>
+                            <th><strong>Chassis Number</strong></th>
+                            <th><strong>GRV Number</strong></th>
+                            <th><strong>Total Cost</strong></th>
+                            <th><strong>Current Valuation</strong></th>
+                            <th><strong>Date Purchased</strong></th>
+                            <th><strong>Assignee</strong></th>
+                            <th><strong>Action</strong></th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        {% for vehicle in object_list %}
+                          <tr>
+                            <td>{{ vehicle.mvd_id }}</td>
+                            <td>{{ vehicle.asset.name }}</td>
+                            <td>{{ vehicle.current_value }}</td>
+                            <td>{{ vehicle.engine_number }}</td>
+                            <td>{{ vehicle.chassis_number }}</td>
+                          <td>{{ vehicle.asset.grv_number }}</td>
+                            <td>${{ vehicle.total_cost }}</td>
+                            <td>${{ vehicle.current_value }}</td>
+                            <td>{{ vehicle.asset.date_purchased }}</td>
+                             <td>
+                              {% if vehicle.asset.assignee %}
+                                  {{ vehicle.asset.assignee.full_name }}
+                                  {% else %}
+                                  Unassigned
+                              {% endif %}
+                          </td>
+                          {% if request.user.is_admin %}
+                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right">
+                                 <a class="dropdown-item" href="{{ vehicle.edit_vehicle }}">View</a>
+                                <a class="dropdown-item" href="{% url 'create-repair' vehicle.asset.asset_id %}">Repair</a>
+                                <a class="dropdown-item" href="{% url 'dispose-asset' vehicle.asset.asset_id %}">Dispose</a>
+                              </div>
+                            </td>
+                           {% endif %}
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+              </div> <!-- end section -->
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/simplebar.min.js' %}"></script>
+    <script src='{% static 'js/daterangepicker.js' %}'></script>
+    <script src='{% static 'js/jquery.stickOnScroll.js' %}'></script>
+    <script src="{% static 'js/tinycolor-min.js' %}"></script>
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+    <script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+    <script>
+      $('#dataTable-1').DataTable(
+      {
+        autoWidth: true,
+        "lengthMenu": [
+          [16, 32, 64, -1],
+          [16, 32, 64, "All"]
+        ]
+      });
+    </script>
+    <script src="{% static 'js/apps.js' %}"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+{% endblock content %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+    {% load crispy_forms_tags %}
+
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'navbar.html' %}
+
+        <div class="container-fluid">
+        {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">Vendors</h2>
+              <p class="card-text">This is a table containing all the vendors that the company buys assets from</p>
+                 {% if request.user.is_admin %}
+                <div style="margin-left: 75%">
+
+                <a href="{% url 'create-vendor' %}" style="margin-right: 10px;">
+                 <button class="btn btn-primary">Add Vendor</button>
+             </a>
+
+              <a href="{% url 'vendors-csv' %}">
+                 <button class="btn btn-success">Export CSV</button>
+             </a>
+                </div>
+            {% endif %}
+                <div class="row my-4">
+                <!-- Small table -->
+                <div class="col-md-12">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <!-- table -->
+                      <table class="table datatables" id="dataTable-1">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th><strong>Name</strong></th>
+                            <th><strong>Email</strong></th>
+                            <th><strong>Phone</strong></th>
+                            <th><strong>Address Line</strong></th>
+                            <th><strong>City</strong></th>
+                            <th><strong>Country</strong></th>
+                              {% if request.user.is_admin %}
+                            <th><strong>Action</strong></th>
+                              {% endif %}
+                          </tr>
+                        </thead>
+                        <tbody>
+                        {% for vendor in object_list %}
+                          <tr>
+                            <td>{{ vendor.vendor_id }}</td>
+                            <td>{{ vendor.name }}</td>
+                            <td>{{ vendor.email }}</td>
+                            <td>{{ vendor.phone }}</td>
+                            <td>{{ vendor.address_line }}</td>
+                            <td>{{ vendor.city }}</td>
+                            <td>{{ vendor.country }}</td>
+                            {% if request.user.is_admin %}
+                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right">
+
+                                <a class="dropdown-item" href="{{ vendor.edit_vendor }}">Edit</a>
+                                <a class="dropdown-item" href="{{ vendor.delete_vendor }}">Delete</a>
+                              </div>
+                            </td>
+                          {% endif %}
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+              </div> <!-- end section -->
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+
+    {% include 'scripts.html' %}
+
+            <script>
+      $('#dataTable-1').DataTable(
+      {
+        autoWidth: true,
+        "lengthMenu": [
+          [16, 32, 64, -1],
+          [16, 32, 64, "All"]
+        ]
+      });
+    </script>
+        <script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+    <script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+
+
+{% endblock content %}

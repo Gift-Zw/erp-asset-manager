@@ -1,0 +1,66 @@
+{% include 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="wrapper">
+    {% include 'navbar.html' %}
+ <main role="main" class="main-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="page-title">Edit Asset Repair Details</h2>
+              <p class="text-muted">This is a form to edit a repair.</p>
+              <div class="card-deck">
+              </div> <!-- / .card-desk-->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card shadow mb-4">
+                    <div class="card-header">
+                      <strong class="card-title">All fields are required.</strong>
+                    </div>
+                    <div class="card-body">
+                      <form method="POST">
+                          {% csrf_token %}
+   <div class="form-row">
+                          <div class="form-group col-md-6">
+                            Date
+                            {{ form.date }}
+                          </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                          <label for="inputAddress2">Cost</label>
+                          {{ form.cost }}
+                        </div>
+                        </div>
+                         <div class="form-row">
+                           <div class="form-group col-md-3">
+                            <label for="inputPhone">Status</label>
+                            {{ form.status }}
+                          </div>
+                          </div>
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            <label for="inputCity">Remarks</label>
+                            {{ form.remarks }}
+                          </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Details</button>
+                      </form>
+                    </div> <!-- /. card-body -->
+                  </div> <!-- /. card -->
+                </div> <!-- /. col -->
+              </div> <!-- /. end-section -->
+             </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main>
+
+</div>
+
+
+{% include 'scripts.html' %}
+
+{% endblock content %}
