@@ -22,8 +22,8 @@
         {% endif %}
           <div class="row justify-content-center">
             <div class="col-12">
-              <h2 class="mb-2 page-title">Data Center</h2>
-              <p class="card-text">This is a table containing all the datacenter equipment available at the company</p>
+              <h2 class="mb-2 page-title">Equipment</h2>
+              <p class="card-text">This is a table containing all the equipment owned by the organization</p>
                 {% if request.user.is_admin %}
                 <div style="margin-left: 75%">
                 <a href="{% url 'create-datacenter-equip' %}" style="margin-right: 10px;">

@@ -14,13 +14,270 @@ from django.contrib.auth import authenticate, login, logout
 from django.db.models import Count, Q, Sum
 from django.contrib import messages
 
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
 
-def sum_value(object_list):
-    sum = 0
-    for asset in object_list:
-        sum += asset.current_value
+from .models import Room, Department, Land, Building, MotorVehicle, Machinery, Furniture, Equipment, Fixture, Vendor, \
+    AssetTransfer, AssetRepair, AssetDisposal
+from .forms import RoomForm, DepartmentForm, LandForm, BuildingForm, MotorVehicleForm, MachineryForm, FurnitureForm, \
+    EquipmentForm, FixtureForm, VendorForm, TransferForm, RepairForm, DisposalForm
 
-    return sum
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
+
+from .models import Room, Department, Land, Building, MotorVehicle, Machinery, Furniture, Equipment
+from .forms import RoomForm, DepartmentForm, LandForm, BuildingForm, MotorVehicleForm, MachineryForm, FurnitureForm, \
+    EquipmentForm
+
+
+# Base class for Create views
+class BaseCreateView(CreateView):
+    template_name = ''
+    success_url = reverse_lazy('')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Perform any additional operations after form validation
+        return response
+
+
+# Base class for Update views
+class BaseUpdateView(UpdateView):
+    template_name = ''
+    success_url = reverse_lazy('')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Perform any additional operations after form validation
+        return response
+
+
+# Base class for List views
+class BaseListView(ListView):
+    template_name = ''
+    context_object_name = ''
+
+
+# Base class for Detail views
+class BaseDetailView(DetailView):
+    template_name = ''
+    context_object_name = ''
+
+
+# Room
+class RoomCreateView(BaseCreateView):
+    model = Room
+    form_class = RoomForm
+    template_name = 'room_create.html'
+    success_url = reverse_lazy('room-list')
+
+
+class RoomUpdateView(BaseUpdateView):
+    model = Room
+    form_class = RoomForm
+    template_name = 'room_update.html'
+    success_url = reverse_lazy('room-list')
+
+
+class RoomListView(BaseListView):
+    model = Room
+    template_name = 'room_list.html'
+    context_object_name = 'rooms'
+
+
+class RoomDetailView(BaseDetailView):
+    model = Room
+    template_name = 'room_detail.html'
+    context_object_name = 'room'
+
+
+# Department
+class DepartmentCreateView(BaseCreateView):
+    model = Department
+    form_class = DepartmentForm
+    template_name = 'department_create.html'
+    success_url = reverse_lazy('department-list')
+
+
+class DepartmentUpdateView(BaseUpdateView):
+    model = Department
+    form_class = DepartmentForm
+    template_name = 'department_update.html'
+    success_url = reverse_lazy('department-list')
+
+
+class DepartmentListView(BaseListView):
+    model = Department
+    template_name = 'department_list.html'
+    context_object_name = 'departments'
+
+
+class DepartmentDetailView(BaseDetailView):
+    model = Department
+    template_name = 'department_detail.html'
+    context_object_name = 'department'
+
+
+# Land
+class LandCreateView(BaseCreateView):
+    model = Land
+    form_class = LandForm
+    template_name = 'land_create.html'
+    success_url = reverse_lazy('land-list')
+
+
+class LandUpdateView(BaseUpdateView):
+    model = Land
+    form_class = LandForm
+    template_name = 'land_update.html'
+    success_url = reverse_lazy('land-list')
+
+
+class LandListView(BaseListView):
+    model = Land
+    template_name = 'land_list.html'
+    context_object_name = 'lands'
+
+
+class LandDetailView(BaseDetailView):
+    model = Land
+    template_name = 'land_detail.html'
+    context_object_name = 'land'
+
+
+# Building
+class BuildingCreateView(BaseCreateView):
+    model = Building
+    form_class = BuildingForm
+    template_name = 'building_create.html'
+    success_url = reverse_lazy('building-list')
+
+
+class BuildingUpdateView(BaseUpdateView):
+    model = Building
+    form_class = BuildingForm
+    template_name = 'building_update.html'
+    success_url = reverse_lazy('building-list')
+
+
+class BuildingListView(BaseListView):
+    model = Building
+    template_name = 'building_list.html'
+    context_object_name = 'buildings'
+
+
+class BuildingDetailView(BaseDetailView):
+    model = Building
+    template_name = 'building_detail.html'
+    context_object_name = 'building'
+
+
+# MotorVehicle
+class MotorVehicleCreateView(BaseCreateView):
+    model = MotorVehicle
+    form_class = MotorVehicleForm
+    template_name = 'motorvehicle_create.html'
+    success_url = reverse_lazy('motorvehicle-list')
+
+
+class MotorVehicleUpdateView(BaseUpdateView):
+    model = MotorVehicle
+    form_class = MotorVehicleForm
+    template_name = 'motorvehicle_update.html'
+    success_url = reverse_lazy('motorvehicle-list')
+
+
+class MotorVehicleListView(BaseListView):
+    model = MotorVehicle
+    template_name = 'motorvehicle_list.html'
+    context_object_name = 'motorvehicles'
+
+
+class MotorVehicleDetailView(BaseDetailView):
+    model = MotorVehicle
+    template_name = 'motorvehicle_detail.html'
+    context_object_name = 'motorvehicle'
+
+
+# Machinery
+class MachineryCreateView(BaseCreateView):
+    model = Machinery
+    form_class = MachineryForm
+    template_name = 'machinery_create.html'
+    success_url = reverse_lazy('machinery-list')
+
+
+class MachineryUpdateView(BaseUpdateView):
+    model = Machinery
+    form_class = MachineryForm
+    template_name = 'machinery_update.html'
+    success_url = reverse_lazy('machinery-list')
+
+
+class MachineryListView(BaseListView):
+    model = Machinery
+    template_name = 'machinery_list.html'
+    context_object_name = 'machineries'
+
+
+class MachineryDetailView(BaseDetailView):
+    model = Machinery
+    template_name = 'machinery_detail.html'
+    context_object_name = 'machinery'
+
+
+# Furniture
+class FurnitureCreateView(BaseCreateView):
+    model = Furniture
+    form_class = FurnitureForm
+    template_name = 'furniture_create.html'
+    success_url = reverse_lazy('furniture-list')
+
+
+class FurnitureUpdateView(BaseUpdateView):
+    model = Furniture
+    form_class = FurnitureForm
+    template_name = 'furniture_update.html'
+    success_url = reverse_lazy('furniture-list')
+
+
+class FurnitureListView(BaseListView):
+    model = Furniture
+    template_name = 'furniture_list.html'
+    context_object_name = 'furnitures'
+
+
+class FurnitureDetailView(BaseDetailView):
+    model = Furniture
+    template_name = 'furniture_detail.html'
+    context_object_name = 'furniture'
+
+
+# Equipment
+class EquipmentCreateView(BaseCreateView):
+    model = Equipment
+    form_class = EquipmentForm
+    template_name = 'equipment_create.html'
+    success_url = reverse_lazy('equipment-list')
+
+
+class EquipmentUpdateView(BaseUpdateView):
+    model = Equipment
+    form_class = EquipmentForm
+    template_name = 'equipment_update.html'
+    success_url = reverse_lazy('equipment-list')
+
+
+class EquipmentListView(BaseListView):
+    model = Equipment
+    template_name = 'equipment_list.html'
+    context_object_name = 'equipments'
+
+
+class EquipmentDetailView(BaseDetailView):
+    model = Equipment
+    template_name = 'equipment_detail.html'
+    context_object_name = 'equipment'
 
 
 def error_404_view(request, exception):
@@ -29,12 +286,6 @@ def error_404_view(request, exception):
 
 def error_500_view(request, *args, **argv):
     return render(request, '500_page.html')
-
-
-# Function to filter warranty dates
-def warranty_days(equip):
-    days_left = equip.warranty_days
-    return days_left
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -168,7 +419,7 @@ class FixtureAndFittingsView(ListView):
 
 
 class MotorVehiclesView(ListView):
-    template_name = 'motorvehicles.html'
+    template_name = 'motorvehicles_list.html'
     model = models.MotorVehicleDetail
     queryset = models.MotorVehicleDetail.objects.filter(asset__is_disposed=False)
 
