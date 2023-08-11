@@ -12,6 +12,14 @@
             <div class="col-12">
               <h2 class="mb-2 page-title">Users</h2>
               <p class="card-text">This is a table containing all the users registered in the system</p>
+
+                <div style="margin-left: 75%">
+                {% if request.user.is_admin %}
+              <a href="#">
+                 <button class="btn btn-success">Add User</button>
+             </a>
+                </div>
+            {% endif %}
               <div class="row my-4">
                 <!-- Small table -->
                 <div class="col-md-12">
@@ -22,18 +30,18 @@
                         <thead>
                           <tr>
                             <th></th>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Department</th>
-                            <th>Company</th>
-                            <th>Address</th>
-                            <th>City</th>
-                            <th>Date</th>
-                            <th>Action</th>
+                            <th><strong>#</strong></th>
+                            <th><strong>First Name</strong></th>
+                            <th><strong>Last Name</strong></th>
+                            <th><strong>Email</strong></th>
+                            <th><strong>Active</strong></th>
+                            <th><strong>Manager</strong></th>
+                            <th><strong>Admin</strong></th>
+                            <th><strong>Action</strong></th>
                           </tr>
                         </thead>
                         <tbody>
+                        {% for user in users %}
                           <tr>
                             <td>
                               <div class="custom-control custom-checkbox">
@@ -41,14 +49,23 @@
                                 <label class="custom-control-label"></label>
                               </div>
                             </td>
-                            <td>427</td>
-                            <td>Clark Dennis</td>
-                            <td>(239) 172-7907</td>
-                            <td>Human Resources</td>
-                            <td>Finale</td>
-                            <td>Ap #978-3375 Adipiscing Av.</td>
-                            <td>High Level</td>
-                            <td>Sep 16, 2020</td>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_active %} <span class="dot dot-lg bg-success mr-2"></span>
+                            {% else %}<span class="dot dot-lg bg-danger mr-2"></span> {% endif %}
+                            </td>
+                              <td>
+                                {% if user.is_manager %} <span class="dot dot-lg bg-success mr-2"></span>
+                            {% else %}<span class="dot dot-lg bg-danger mr-2"></span> {% endif %}
+                            </td>
+                              <td>
+                                {% if user.is_admin %} <span class="dot dot-lg bg-success mr-2"></span>
+                            {% else %}<span class="dot dot-lg bg-danger mr-2"></span> {% endif %}
+                            </td>
+
                             <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="text-muted sr-only">Action</span>
                               </button>
@@ -59,6 +76,7 @@
                               </div>
                             </td>
                           </tr>
+                        {% endfor %}
                         </tbody>
                       </table>
                     </div>
@@ -71,6 +89,31 @@
       </main> <!-- main -->
 </div>
 
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/simplebar.min.js' %}"></script>
+    <script src='{% static 'js/daterangepicker.js' %}'></script>
+    <script src='{% static 'js/jquery.stickOnScroll.js' %}'></script>
+    <script src="{% static 'js/tinycolor-min.js' %}"></script>
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+    <script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+    <script>
+      $('#dataTable-1').DataTable(
+      {
+        autoWidth: true,
+        "lengthMenu": [
+          [16, 32, 64, -1],
+          [16, 32, 64, "All"]
+        ]
+      });
+    </script>
+    <script src="{% static 'js/apps.js' %}"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
     <script>
       window.dataLayer = window.dataLayer || [];
 
@@ -81,6 +124,5 @@
       gtag('js', new Date());
       gtag('config', 'UA-56159088-1');
     </script>
-
 
 {% endblock content %}

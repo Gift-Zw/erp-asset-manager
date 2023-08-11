@@ -1,17 +1,16 @@
 from decimal import Decimal
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 import datetime
 from django.utils.text import slugify
 from users.models import User
 from django.urls import reverse
-from .depreciation import straight_line_depreciation, units_of_production_depreciation, reducing_balance_depreciation
 
-DEPRECIATION_METHODS = [
-    ('SL', 'Straight-Line'),
-    ('RB', 'Reducing Balance'),
-    ('UP', 'Units of Production'),
+ASSET_SOURCES = [
+    ('PURCHASED', 'PURCHASED'),
+    ('DONATED', 'DONATED'),
+    ('FORFEITED', 'FORFEITED')
 ]
 
 
@@ -23,10 +22,21 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
+class AssetClassProperties(TimeStampedModel):
+    name = models.CharField(max_length=255)
+    depreciation_rate = models.DecimalField(max_digits=30, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+
 class Room(TimeStampedModel):
     room_id = models.BigAutoField(primary_key=True, unique=True)
     name = models.CharField(max_length=250)
     is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
 
 
 class Department(TimeStampedModel):
@@ -56,41 +66,53 @@ class Vendor(models.Model):
 
 class BaseAsset(models.Model):
     asset_id = models.BigAutoField(primary_key=True, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
     name = models.CharField(max_length=255)
-    useful_life = models.PositiveIntegerField()
-    purchase_value = models.DecimalField(decimal_places=2, max_digits=852)
+    useful_life = models.PositiveIntegerField(blank=True, default=0)
+    cost = models.DecimalField(decimal_places=2, max_digits=852)
+    source = models.CharField(max_length=255, default='PURCHASED')
     purchase_date = models.DateField()
-    depreciation_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    depreciation_method = models.CharField(max_length=50, choices=DEPRECIATION_METHODS)
     last_depreciation_date = models.DateField(blank=True, null=True)
-    accumulated_depreciation = models.DecimalField(max_digits=30, decimal_places=2, default=0)
+    accumulated_depreciation = models.DecimalField(max_digits=30, decimal_places=2, default=0, blank=True)
     is_disposed = models.BooleanField(default=False)
+    pending_disposal = models.BooleanField(default=False)
+    asset_class = models.ForeignKey(AssetClassProperties, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
-    def calculate_depreciation(self):
-        if self.depreciation_method == 'SL':
-            return straight_line_depreciation(self.purchase_value, self.useful_life)
-        elif self.depreciation_method == 'RB':
-            return reducing_balance_depreciation(self.purchase_value, self.useful_life, self.depreciation_rate)
-        elif self.depreciation_method == 'UP':
-            return units_of_production_depreciation(self.purchase_value, self.useful_life, self.depreciation_rate)
-        else:
-            return Decimal('0.0')
+    @property
+    def months_used(self):
+        current_date = datetime.date.today()
+        months_in_use = (current_date.year - self.purchase_date.year) * 12 + (
+                current_date.month - self.purchase_date.month)
+        return int(months_in_use)
 
-    def dispose(self):
-        self.is_disposed = True
-        self.save()
+    @property
+    def years_used(self):
+        current_date = datetime.date.today()
+        years_in_use = current_date.year - self.purchase_date.year
+        if current_date.month < self.purchase_date.month or (
+                current_date.month == self.purchase_date.month and current_date.day < self.purchase_date.day):
+            years_in_use -= 1
+        return years_in_use
 
-    def dispose_asset(self):
-        return reverse('update-motor-vehicle', kwargs={'pk': self.asset_id, 'slug': self.slug})
+    @property
+    def net_book_value(self):
+        return self.cost - self.get_accumulated_depreciation
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+    @property
+    def annual_depreciation(self):
+        annual_depreciation = self.cost * self.asset_class.depreciation_rate
+        return annual_depreciation
+
+    @property
+    def get_accumulated_depreciation(self):
+        accumulated_depreciation = self.annual_depreciation * self.months_used / 12
+        return accumulated_depreciation
+
+    def calculate_accumulated_depreciation(self, depreciation_period):
+        depreciation = self.annual_depreciation * (depreciation_period / 12)
+        return depreciation
 
     class Meta:
         abstract = True
@@ -100,13 +122,14 @@ class Land(BaseAsset):
     area = models.DecimalField(max_digits=10, decimal_places=2)
     land_type = models.CharField(max_length=50)
     title_deed_number = models.CharField(max_length=50, unique=True)
-    title_deed = models.FileField(upload_to='title deeds/')
+    title_deed = models.FileField(upload_to='title deeds/', blank=True)
     registered_owner = models.CharField(max_length=255)
 
-    def dispose_land(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    def dispose_land(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None, attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
+            disposal_type=disposal_type,
             disposal_price=disposal_price,
             reason=reason,
             attachment1=attachment1,
@@ -126,6 +149,42 @@ class Land(BaseAsset):
         transfer.save()
         return transfer
 
+    def edit_land(self):
+        return reverse(
+            'land-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'land-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
+
 
 class Building(BaseAsset):
     address = models.CharField(max_length=255)
@@ -134,11 +193,13 @@ class Building(BaseAsset):
     building_type = models.CharField(max_length=50)
     number_of_floors = models.PositiveIntegerField()
 
-    def dispose_building(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    def dispose_building(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None,
+                         attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
             disposal_price=disposal_price,
+            disposal_type=disposal_type,
             reason=reason,
             attachment1=attachment1,
             attachment2=attachment2
@@ -147,7 +208,7 @@ class Building(BaseAsset):
         self.save()
         return disposal
 
-    def repair_building(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None,):
+    def repair_building(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None, ):
         repair = AssetRepair.objects.create(
             asset=self,
             repair_date=repair_date,
@@ -159,15 +220,68 @@ class Building(BaseAsset):
         repair.save()
         return repair
 
-    def transfer_building(self, transfer_to, transfer_from, remarks):
+    def transfer_building(self, transfer_date, transfer_to, transfer_from, remarks):
         transfer = AssetTransfer.objects.create(
             asset=self,
             transfer_to=transfer_to,
             transfer_from=transfer_from,
-            remarks=remarks
+            remarks=remarks,
+            transfer_date=transfer_date
         )
         transfer.save()
         return transfer
+
+    def edit_building(self):
+        return reverse(
+            'building-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'building-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def repair(self):
+        return reverse(
+            'building-repair',
+            kwargs={
+                'pk': self.asset_id
+            }
+        )
+
+    def transfer(self):
+        return reverse(
+            'building-transfer',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
 
 
 class MotorVehicle(BaseAsset):
@@ -179,11 +293,17 @@ class MotorVehicle(BaseAsset):
     model = models.CharField(max_length=255)
     year = models.PositiveIntegerField()
 
-    def dispose_motor_vehicle(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    @property
+    def total_cost(self):
+        return self.freight + self.duty + self.cost
+
+    def dispose_motor_vehicle(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None,
+                              attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
             disposal_price=disposal_price,
+            disposal_type=disposal_type,
             reason=reason,
             attachment1=attachment1,
             attachment2=attachment2
@@ -192,7 +312,8 @@ class MotorVehicle(BaseAsset):
         self.save()
         return disposal
 
-    def repair_motor_vehicle(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None,):
+    def repair_motor_vehicle(self, repair_date, repair_cost, description, status="Pending Approval",
+                             repair_quote=None, ):
         repair = AssetRepair.objects.create(
             asset=self,
             repair_date=repair_date,
@@ -204,15 +325,68 @@ class MotorVehicle(BaseAsset):
         repair.save()
         return repair
 
-    def transfer_motor_vehicle(self, transfer_to, transfer_from, remarks):
+    def transfer_motor_vehicle(self, transfer_date, transfer_to, transfer_from, remarks):
         transfer = AssetTransfer.objects.create(
             asset=self,
             transfer_to=transfer_to,
             transfer_from=transfer_from,
-            remarks=remarks
+            remarks=remarks,
+            transfer_date=transfer_date
         )
         transfer.save()
         return transfer
+
+    def edit_moto_vehicles(self):
+        return reverse(
+            'motor-vehicle-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'motor-vehicle-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def repair(self):
+        return reverse(
+            'motor-vehicle-repair',
+            kwargs={
+                'pk': self.asset_id
+            }
+        )
+
+    def transfer(self):
+        return reverse(
+            'motor-vehicle-transfer',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
 
 
 class Machinery(BaseAsset):
@@ -221,11 +395,13 @@ class Machinery(BaseAsset):
     model = models.CharField(max_length=255)
     capacity = models.CharField(max_length=50)
 
-    def dispose_machinery(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    def dispose_machinery(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None,
+                          attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
             disposal_price=disposal_price,
+            disposal_type=disposal_type,
             reason=reason,
             attachment1=attachment1,
             attachment2=attachment2
@@ -234,7 +410,7 @@ class Machinery(BaseAsset):
         self.save()
         return disposal
 
-    def repair_machinery(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None,):
+    def repair_machinery(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None, ):
         repair = AssetRepair.objects.create(
             asset=self,
             repair_date=repair_date,
@@ -246,15 +422,68 @@ class Machinery(BaseAsset):
         repair.save()
         return repair
 
-    def transfer_machinery(self, transfer_to, transfer_from, remarks):
+    def transfer_machinery(self, transfer_date, transfer_to, transfer_from, remarks):
         transfer = AssetTransfer.objects.create(
             asset=self,
             transfer_to=transfer_to,
             transfer_from=transfer_from,
-            remarks=remarks
+            remarks=remarks,
+            transfer_date=transfer_date
         )
         transfer.save()
         return transfer
+
+    def edit_machinery(self):
+        return reverse(
+            'machinery-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'machinery-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def repair(self):
+        return reverse(
+            'machinery-repair',
+            kwargs={
+                'pk': self.asset_id
+            }
+        )
+
+    def transfer(self):
+        return reverse(
+            'machinery-transfer',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
 
 
 class Furniture(BaseAsset):
@@ -262,11 +491,13 @@ class Furniture(BaseAsset):
     material = models.CharField(max_length=50)
     condition = models.CharField(max_length=50)
 
-    def dispose_furniture(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    def dispose_furniture(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None,
+                          attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
             disposal_price=disposal_price,
+            disposal_type=disposal_type,
             reason=reason,
             attachment1=attachment1,
             attachment2=attachment2
@@ -275,7 +506,7 @@ class Furniture(BaseAsset):
         self.save()
         return disposal
 
-    def repair_furniture(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None,):
+    def repair_furniture(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None, ):
         repair = AssetRepair.objects.create(
             asset=self,
             repair_date=repair_date,
@@ -287,15 +518,68 @@ class Furniture(BaseAsset):
         repair.save()
         return repair
 
-    def transfer_furniture(self, transfer_to, transfer_from, remarks):
+    def transfer_furniture(self, transfer_date, transfer_to, transfer_from, remarks):
         transfer = AssetTransfer.objects.create(
             asset=self,
             transfer_to=transfer_to,
             transfer_from=transfer_from,
-            remarks=remarks
+            remarks=remarks,
+            transfer_date=transfer_date
         )
         transfer.save()
         return transfer
+
+    def edit_furniture(self):
+        return reverse(
+            'furniture-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'furniture-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def repair(self):
+        return reverse(
+            'furniture-repair',
+            kwargs={
+                'pk': self.asset_id
+            }
+        )
+
+    def transfer(self):
+        return reverse(
+            'furniture-transfer',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
 
 
 class Equipment(BaseAsset):
@@ -303,16 +587,17 @@ class Equipment(BaseAsset):
     manufacturer = models.CharField(max_length=255)
     asset_tag = models.CharField(max_length=100, blank=True)
     model = models.CharField(max_length=255)
-    capacity = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
 
-    def dispose_equipment(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    def dispose_equipment(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None,
+                          attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
             disposal_price=disposal_price,
+            disposal_type=disposal_type,
             reason=reason,
             attachment1=attachment1,
             attachment2=attachment2
@@ -321,7 +606,7 @@ class Equipment(BaseAsset):
         self.save()
         return disposal
 
-    def repair_equipment(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None,):
+    def repair_equipment(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None, ):
         repair = AssetRepair.objects.create(
             asset=self,
             repair_date=repair_date,
@@ -333,26 +618,81 @@ class Equipment(BaseAsset):
         repair.save()
         return repair
 
-    def transfer_equipment(self, transfer_to, transfer_from, remarks):
+    def transfer_equipment(self, transfer_date, transfer_to, transfer_from, remarks):
         transfer = AssetTransfer.objects.create(
             asset=self,
             transfer_to=transfer_to,
             transfer_from=transfer_from,
-            remarks=remarks
+            remarks=remarks,
+            transfer_date=transfer_date
         )
         transfer.save()
         return transfer
+
+    def edit_equipment(self):
+        return reverse(
+            'equipment-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'equipment-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def repair(self):
+        return reverse(
+            'equipment-repair',
+            kwargs={
+                'pk': self.asset_id
+            }
+        )
+
+    def transfer(self):
+        return reverse(
+            'equipment-transfer',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            asset=self,
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
 
 
 class Fixture(BaseAsset):
     asset_tag = models.CharField(max_length=100)
     location = models.ForeignKey(Room, on_delete=models.CASCADE)
 
-    def dispose_fixture(self, disposal_date, disposal_price, reason, attachment1=None, attachment2=None):
+    def dispose_fixture(self, disposal_date, disposal_type, disposal_price, reason, attachment1=None, attachment2=None):
         disposal = AssetDisposal.objects.create(
             asset=self,
             disposal_date=disposal_date,
             disposal_price=disposal_price,
+            disposal_type=disposal_type,
             reason=reason,
             attachment1=attachment1,
             attachment2=attachment2
@@ -361,7 +701,7 @@ class Fixture(BaseAsset):
         self.save()
         return disposal
 
-    def repair_fixture(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None,):
+    def repair_fixture(self, repair_date, repair_cost, description, status="Pending Approval", repair_quote=None, ):
         repair = AssetRepair.objects.create(
             asset=self,
             repair_date=repair_date,
@@ -373,35 +713,97 @@ class Fixture(BaseAsset):
         repair.save()
         return repair
 
-    def transfer_fixture(self, transfer_to, transfer_from, remarks):
+    def transfer_fixture(self, transfer_date, transfer_to, transfer_from, remarks):
         transfer = AssetTransfer.objects.create(
             asset=self,
             transfer_to=transfer_to,
             transfer_from=transfer_from,
-            remarks=remarks
+            remarks=remarks,
+            transfer_date=transfer_date
         )
         transfer.save()
         return transfer
+
+    def edit_fixture(self):
+        return reverse(
+            'fixture-update',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def dispose(self):
+        return reverse(
+            'fixture-dispose',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def repair(self):
+        return reverse(
+            'fixture-repair',
+            kwargs={
+                'pk': self.asset_id
+            }
+        )
+
+    def transfer(self):
+        return reverse(
+            'fixture-transfer-transfer',
+            kwargs={
+                'pk': self.asset_id,
+            }
+        )
+
+    def revalue_asset(self, new_value, remarks, userName):
+        old_value = self.net_book_value
+        accumulated_dep = self.get_accumulated_depreciation
+        diff = self.net_book_value - new_value
+        old_date_purchased = self.purchase_date
+
+        self.purchase_date = datetime.date.today()
+        self.cost = new_value
+        self.save()
+
+        record = AssetRevaluationRecord.objects.create(
+            new_value=new_value,
+            old_value=old_value,
+            accumulated_depreciation=accumulated_dep,
+            asset_purchase_date=old_date_purchased,
+            remarks=remarks,
+            perfomed_by=userName
+
+        )
 
 
 class AssetDisposal(TimeStampedModel):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     asset = GenericForeignKey('content_type', 'object_id')
+    disposal_type = models.CharField(max_length=255, )
     disposal_date = models.DateField()
     disposal_price = models.DecimalField(max_digits=10, decimal_places=2)
-    reason = models.CharField(max_length=255)
+    reason = models.TextField(max_length=255)
     attachment1 = models.FileField(upload_to='disposals/', blank=True)
     attachment2 = models.FileField(upload_to='disposals/', blank=True)
     approved = models.BooleanField(default=False)
     approved_date = models.DateTimeField(blank=True, null=True)
     approvedBy = models.CharField(max_length=250, blank=True)
+    is_rejected = models.BooleanField(default=False)
 
     def approve_disposal(self, approvedBy):
         self.approved = True
         self.approved_date = datetime.datetime.now()
         self.approvedBy = approvedBy
         self.asset.is_disposed = True
+        self.asset.save()
+        self.save()
+
+    def reject_disposal(self, approvedBy):
+        self.is_rejected = True
+        self.approved_date = datetime.datetime.now()
+        self.approvedBy = approvedBy
         self.asset.save()
         self.save()
 
@@ -412,15 +814,22 @@ class AssetRepair(TimeStampedModel):
     asset = GenericForeignKey('content_type', 'object_id')
     repair_date = models.DateField()
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     status = models.CharField(max_length=250, default='Pending Approval')
     repair_quote = models.FileField(upload_to='repairs/', blank=True)
     approved = models.BooleanField(default=False)
     approved_date = models.DateTimeField(blank=True, null=True)
     approvedBy = models.CharField(max_length=250, blank=True)
+    is_rejected = models.BooleanField(default=False)
 
     def approve_repair(self, approvedBy):
         self.approved = True
+        self.approved_date = datetime.datetime.now()
+        self.approvedBy = approvedBy
+        self.save()
+
+    def rejected_repair(self, approvedBy):
+        self.is_rejected = True
         self.approved_date = datetime.datetime.now()
         self.approvedBy = approvedBy
         self.save()
@@ -447,10 +856,39 @@ class AssetTransfer(TimeStampedModel):
     asset = GenericForeignKey('content_type', 'object_id')
     transfer_to = models.CharField(max_length=100)
     transfer_from = models.CharField(max_length=100)
-    remarks = models.TextField(max_length=500)
+    transfer_date = models.DateField()
+    approved_date = models.DateField(blank=True, null=True)
+    approved_by = models.CharField(max_length=255, default='')
+    remarks = models.TextField(max_length=500, blank=True)
+    is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
 
     def __str__(self):
         return self.asset.name
+
+    def approve_transfer(self, approvedBy):
+        self.is_approved = True
+        self.approved_date = datetime.datetime.now()
+        self.approved_by = approvedBy
+        self.save()
+
+    def reject_transfer(self, rejectedBy):
+        self.is_rejected = True
+        self.approve_transfer = datetime.datetime.now()
+        self.approved_by = rejectedBy
+        self.save()
+
+
+class AssetRevaluationRecord(TimeStampedModel):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    asset = GenericForeignKey('content_type', 'object_id')
+    old_value = models.DecimalField(decimal_places=2, max_digits=85)
+    new_value = models.DecimalField(decimal_places=2, max_digits=85)
+    accumulated_depreciation = models.DecimalField(decimal_places=2, max_digits=85)
+    remarks = models.TextField(max_length=500)
+    asset_purchase_date = models.DateField()
+    perfomed_by = models.CharField(max_length=255)
 
 #
 #
@@ -505,7 +943,7 @@ class AssetTransfer(TimeStampedModel):
 #     slug = models.SlugField(unique=True, blank=True)
 #     name = models.CharField(max_length=255)
 #     useful_life = models.PositiveIntegerField()
-#     purchase_value = models.DecimalField(decimal_places=2, max_digits=852)
+#     cost = models.DecimalField(decimal_places=2, max_digits=852)
 #     purchase_date = models.DateField()
 #     depreciation_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 #     depreciation_method = models.CharField(max_length=50, choices=DEPRECIATION_METHODS)
@@ -523,11 +961,11 @@ class AssetTransfer(TimeStampedModel):
 #
 #     def calculate_depreciation(self):
 #         if self.depreciation_method == 'straight_line':
-#             return straight_line_depreciation(self.purchase_value, self.useful_life)
+#             return straight_line_depreciation(self.cost, self.useful_life)
 #         elif self.depreciation_method == 'reducing_balance':
-#             return reducing_balance_depreciation(self.purchase_value, self.useful_life, self.depreciation_rate)
+#             return reducing_balance_depreciation(self.cost, self.useful_life, self.depreciation_rate)
 #         elif self.depreciation_method == 'units_of_production':
-#             return units_of_production_depreciation(self.purchase_value, self.useful_life, self.depreciation_rate)
+#             return units_of_production_depreciation(self.cost, self.useful_life, self.depreciation_rate)
 #         else:
 #             return 0.0
 #
@@ -737,11 +1175,11 @@ class AssetTransfer(TimeStampedModel):
 #
 #     @property
 #     def total_cost(self):
-#         return self.asset.purchase_value + self.freight + self.duty
+#         return self.asset.cost + self.freight + self.duty
 #
 #     @property
 #     def total_depreciation(self):
-#         value = self.asset.purchase_value * self.asset.days_used() * Decimal(0.2)
+#         value = self.asset.cost * self.asset.days_used() * Decimal(0.2)
 #         return round(value, 2)
 #
 #     @property
@@ -778,12 +1216,12 @@ class AssetTransfer(TimeStampedModel):
 #
 #     @property
 #     def total_depreciation(self):
-#         value = self.asset.purchase_value * self.asset.days_used() * Decimal(0.1)
+#         value = self.asset.cost * self.asset.days_used() * Decimal(0.1)
 #         return round(value, 2)
 #
 #     @property
 #     def current_value(self):
-#         value = self.asset.purchase_value - self.total_depreciation
+#         value = self.asset.cost - self.total_depreciation
 #         if value > 0:
 #             return value
 #         else:
@@ -815,12 +1253,12 @@ class AssetTransfer(TimeStampedModel):
 #
 #     @property
 #     def total_depreciation(self):
-#         value = self.asset.purchase_value * self.asset.days_used() * Decimal(0.1)
+#         value = self.asset.cost * self.asset.days_used() * Decimal(0.1)
 #         return round(value, 2)
 #
 #     @property
 #     def current_value(self):
-#         value = self.asset.purchase_value - self.total_depreciation
+#         value = self.asset.cost - self.total_depreciation
 #         if value > 0:
 #             return value
 #         else:
@@ -855,12 +1293,12 @@ class AssetTransfer(TimeStampedModel):
 #
 #     @property
 #     def total_depreciation(self):
-#         value = self.asset.purchase_value * self.asset.days_used() * Decimal(0.1)
+#         value = self.asset.cost * self.asset.days_used() * Decimal(0.1)
 #         return round(value, 2)
 #
 #     @property
 #     def current_value(self):
-#         value = self.asset.purchase_value - self.total_depreciation
+#         value = self.asset.cost - self.total_depreciation
 #         if value > 0:
 #             return value
 #         else:
@@ -890,14 +1328,14 @@ class AssetTransfer(TimeStampedModel):
 #     def is_warranty_active(self):
 #         return self.warranty_end > datetime.date.today()
 #
-#     def edit_computer_equipment(self):
-#         return reverse(
-#             'update-computer-equip',
-#             kwargs={
-#                 'pk': self.ced_id,
-#                 'serial_number': self.serial_number
-#             }
-#         )
+# def edit_computer_equipment(self):
+#     return reverse(
+#         'update-computer-equip',
+#         kwargs={
+#             'pk': self.ced_id,
+#             'serial_number': self.serial_number
+#         }
+#     )
 #
 #     @property
 #     def warranty_days(self):
@@ -906,12 +1344,12 @@ class AssetTransfer(TimeStampedModel):
 #
 #     @property
 #     def total_depreciation(self):
-#         value = self.asset.purchase_value * self.asset.days_used() * Decimal(0.1)
+#         value = self.asset.cost * self.asset.days_used() * Decimal(0.1)
 #         return round(value, 2)
 #
 #     @property
 #     def current_value(self):
-#         value = self.asset.purchase_value - self.total_depreciation
+#         value = self.asset.cost - self.total_depreciation
 #         if value > 0:
 #             return value
 #         else:

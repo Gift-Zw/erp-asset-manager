@@ -26,14 +26,14 @@ def comp_equip_csv(request):
     response['Content-Disposition'] = 'attachment; filename={0}'.format(file_name)
     writer = csv.writer(response)
     writer.writerow(
-        ['Name', 'Serial Number', 'GRV Number', 'Warranty End Date', 'Room', 'Currency', 'Purchase Value', 'Condition',
+        ['Name', 'Serial Number', 'GRV Number', 'Warranty End Date', 'Room', 'Currency', 'Cost', 'Condition',
          'Date Purchased', 'Vendor', 'Vendor Email', 'Assignee First Name', 'Assignee Last Name',
          'Date Created',
          'Last Modified'])
 
     equip = comp_equip.values_list('asset__name', 'serial_number', 'asset__grv_number', 'warranty_end', 'room',
                                    'asset__currency',
-                                   'asset__purchase_value', 'asset__condition', 'asset__date_purchased',
+                                   'asset__cost', 'asset__condition', 'asset__date_purchased',
                                    'asset__vendor__name', 'asset__vendor__email', 'asset__assignee__first_name',
                                    'asset__assignee__last_name',
                                    'asset__created_date', 'last_modified')
@@ -49,14 +49,14 @@ def datacenter_csv(request):
     response['Content-Disposition'] = 'attachment; filename={0}'.format(file_name)
     writer = csv.writer(response)
     writer.writerow(
-        ['Name', 'Serial Number', 'GRV Number' 'Warranty End Date', 'Room', 'Currency', 'Purchase Value', 'Condition',
+        ['Name', 'Serial Number', 'GRV Number' 'Warranty End Date', 'Room', 'Currency', 'Cost', 'Condition',
          'Date Purchased', 'Vendor', 'Vendor Email', 'Assignee First Name', 'Assignee Last Name',
          'Date Created',
          'Last Modified'])
 
     equip = datacenter_equip.values_list('asset__name', 'serial_number', 'asset__grv_number', 'warranty_end', 'room',
                                          'asset__currency',
-                                         'asset__purchase_value', 'asset__condition', 'asset__date_purchased',
+                                         'asset__cost', 'asset__condition', 'asset__date_purchased',
                                          'asset__vendor__name', 'asset__vendor__email', 'asset__assignee__first_name',
                                          'asset__assignee__last_name',
                                          'asset__created_date', 'last_modified')
@@ -71,13 +71,13 @@ def office_equip_csv(request):
     file_name = 'office-equipment-{0}.csv'.format(date.today())
     response['Content-Disposition'] = 'attachment; filename={0}'.format(file_name)
     writer = csv.writer(response)
-    writer.writerow(['Name', 'Asset Tag', 'GRV NUmber', 'Room', 'Currency', 'Purchase Value', 'Condition',
+    writer.writerow(['Name', 'Asset Tag', 'GRV NUmber', 'Room', 'Currency', 'Cost', 'Condition',
                      'Date Purchased', 'Vendor', 'Vendor Email', 'Assignee First Name', 'Assignee Last Name',
                      'Date Created',
                      'Last Modified'])
 
     equip = office_equip.values_list('asset__name', 'asset_tag', 'asset__grv_number', 'room', 'asset__currency',
-                                     'asset__purchase_value', 'asset__condition', 'asset__date_purchased',
+                                     'asset__cost', 'asset__condition', 'asset__date_purchased',
                                      'asset__vendor__name', 'asset__vendor__email', 'asset__assignee__first_name',
                                      'asset__assignee__last_name',
                                      'asset__created_date', 'last_modified')
@@ -92,13 +92,13 @@ def fixture_fitting_csv(request):
     file_name = 'fixtures-fittings-{0}.csv'.format(date.today())
     response['Content-Disposition'] = 'attachment; filename={0}'.format(file_name)
     writer = csv.writer(response)
-    writer.writerow(['Name', 'Asset Tag', 'GRV Number', 'Room', 'Currency', 'Purchase Value', 'Condition',
+    writer.writerow(['Name', 'Asset Tag', 'GRV Number', 'Room', 'Currency', 'Cost', 'Condition',
                      'Date Purchased', 'Vendor', 'Vendor Email', 'Assignee First Name', 'Assignee Last Name',
                      'Date Created',
                      'Last Modified'])
 
     equip = fixture_fitting.values_list('asset__name', 'asset_tag', 'asset__grv_number', 'room', 'asset__currency',
-                                        'asset__purchase_value', 'asset__condition', 'asset__date_purchased',
+                                        'asset__cost', 'asset__condition', 'asset__date_purchased',
                                         'asset__vendor__name', 'asset__vendor__email', 'asset__assignee__first_name',
                                         'asset__assignee__last_name',
                                         'asset__created_date', 'last_modified')
@@ -114,7 +114,7 @@ def motor_vehicles_csv(request):
     response['Content-Disposition'] = 'attachment; filename={0}'.format(file_name)
     writer = csv.writer(response)
     writer.writerow(
-        ['Name', 'Registration Number', 'Engine Number', 'Chassis Number', 'GRV Number', 'Currency', 'Purchase Value',
+        ['Name', 'Registration Number', 'Engine Number', 'Chassis Number', 'GRV Number', 'Currency', 'Cost',
          'Condition',
          'Date Purchased', 'Vendor', 'Vendor Email', 'Assignee First Name', 'Assignee Last Name',
          'Date Created',
@@ -123,7 +123,7 @@ def motor_vehicles_csv(request):
     vehicles = motor_vehicles.values_list('asset__name', 'reg_number', 'engine_number', 'chassis_number',
                                           'asset__grv_number',
                                           'asset__currency',
-                                          'asset__purchase_value', 'asset__condition', 'asset__date_purchased',
+                                          'asset__cost', 'asset__condition', 'asset__date_purchased',
                                           'asset__vendor__name', 'asset__vendor__email', 'asset__assignee__first_name',
                                           'asset__assignee__last_name',
                                           'asset__created_date', 'last_modified')

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load humanize %}
 {% block content %}
 
 <div class="wrapper">
@@ -24,17 +25,110 @@
             <div class="col-12">
               <h2 class="mb-2 page-title">Land</h2>
               <p class="card-text">This is a table containing all the land owned by the organization</p>
-                {% if request.user.is_admin %}
-                <div style="margin-left: 75%">
-                <a href="{% url 'create-datacenter-equip' %}" style="margin-right: 10px;">
-                 <button class="btn btn-primary">Add Asset</button>
+                                                <div class="row">
+
+                <div class="col-md-6 col-xl-4 mb-4">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-shopping-cart text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col pr-0">
+                          <p class="small text-muted mb-0">Total Net Book Value</p>
+                          <span class="h4 mb-0">${{ total_value | floatformat:2 | intcomma}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-4 mb-4">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-filter text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col">
+                          <p class="small text-muted mb-0">Depreciation Rate</p>
+                          <div class="row align-items-center no-gutters">
+                            <div class="col-auto">
+                              <span class="h4 mr-2 mb-0"> 25.6% </span>
+                            </div>
+                            <div class="col-md-12 col-lg">
+                              <div class="progress progress-sm mt-2" style="height:3px">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 25.6%" aria-valuenow="87" aria-valuemin="0" aria-valuemax="100"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-4 mb-4">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-activity text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col">
+                          <p class="small text-muted mb-0">Total Area</p>
+                          <span class="h4 mb-0">80 000 h.a</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div> <!-- end section -->
+
+                <div style="margin-left: 70%">
+                <a href="{% url 'land-create' %}" style="margin-right: 15px;">
+                 <button class="btn btn-primary">Add Land</button>
+             </a>
+             <a href="#" style="margin-right: 15px;">
+                 <button class="btn btn-warning " data-toggle="modal" data-target="#varyModal" data-whatever="@mdo">Revaluate All Land</button>
+
              </a>
 
-              <a href="{% url 'datacenter-equip-csv' %}">
-                 <button class="btn btn-success">Export CSV</button>
-             </a>
                 </div>
-            {% endif %}
+                    <div class="modal fade" id="varyModal" tabindex="-1" role="dialog" aria-labelledby="varyModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="varyModalLabel">Revaluate All Land</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <form action="{% url 'land-revaluate' %}" method="post" >
+                                  {% csrf_token %}
+                                <div class="form-group">
+                                  <label for="recipient-name" class="col-form-label">Revaluation Percentage</label>
+                                  {{ form.percentage }}
+                                </div>
+                                <div class="form-group">
+                                  <label for="message-text" class="col-form-label">Remarks</label>
+                                  {{ form.remarks }}
+                                </div>
+                                  <button type="submit" class="btn mb-2 btn-primary">Revaluate</button>
+                              </form>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn mb-2 btn-secondary" data-dismiss="modal">Close</button>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                 <div class="row my-4">
                 <!-- Small table -->
                 <div class="col-md-12">
@@ -46,54 +140,46 @@
                           <tr>
                             <th>#</th>
                             <th><strong>Name</strong></th>
-                            <th><strong>Serial Number</strong></th>
-                             <th><strong>GRV Number</strong></th>
-                            <th><strong>Purchase Value</strong></th>
-                            <th><strong>Current Valuation</strong></th>
-                            <th><strong>Warranty Status</strong></th>
-                            <th><strong>Vendor</strong></th>
-                            <th><strong>Date Purchased</strong></th>
-                            <th><strong>Assignee</strong></th>
+                            <th><strong>Title Deed #</strong></th>
+                             <th><strong>Area</strong></th>
+                          <th><strong>Land Type</strong></th>
+                            <th><strong>Registered Owner</strong></th>
+                            <th><strong>Cost</strong></th>
+                            <th><strong>Purchase Date</strong></th>
                               {% if request.user.is_admin %}
                             <th><strong>Action</strong></th>
                               {% endif %}
                           </tr>
                         </thead>
                         <tbody id="tbody">
-                        {% for equip in object_list %}
+                        {% for land in lands %}
                           <tr>
-                            <td>{{ equip.dcd_id }}</td>
-                            <td>{{ equip.asset.name }}</td>
-                            <td>{{ equip.serial_number }}</td>
-                          <td>{{ equip.asset.grv_number }}</td>
-                            <td>${{ equip.asset.purchase_value }}</td>
-                             <td>${{ equip.current_value }}</td>
-                              <td>
-                                  {% if equip.warranty_days > 30 %}
-                                    <h5><span class="badge badge-success"> Active </span></h5>
-                                  {% elif equip.warranty_days < 30 and equip.warranty_days >= 0  %}
-                                     <h5><span class="badge badge-warning">Critical</span></h5>
-                                  {% else %}
-                                      <h5><span class="badge badge-danger">Expired</span></h5>
-                                  {% endif %}
-                              </td>
-                            <td>{{ equip.asset.vendor }}</td>
-                            <td>{{ equip.asset.date_purchased }}</td>
-                            <td>
-                              {% if equip.asset.assignee %}
-                                  {{ equip.asset.assignee.full_name }}
-                                  {% else %}
-                                  Unassigned
-                              {% endif %}
-                          </td>
+                            <td>{{ land.asset_id }}</td>
+                            <td>{{ land.name }}</td>
+                          <td>{{ land.title_deed_number }}</td>
+                            <td>{{ land.area }}</td>
+                          <td>{{ land.land_type }}</td>
+                            <td>{{ land.registered_owner }}</td>
+                             <td>${{ land.cost | intcomma }}</td>
+
+{#                              <td>#}
+{#                                  {% if equip.warranty_days > 30 %}#}
+{#                                    <h5><span class="badge badge-success"> Active </span></h5>#}
+{#                                  {% elif equip.warranty_days < 30 and equip.warranty_days >= 0  %}#}
+{#                                     <h5><span class="badge badge-warning">Critical</span></h5>#}
+{#                                  {% else %}#}
+{#                                      <h5><span class="badge badge-danger">Expired</span></h5>#}
+{#                                  {% endif %}#}
+{#                              </td>#}
+                            <td>{{ land.purchase_date }}</td>
                           {% if request.user.is_admin %}
                             <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="text-muted sr-only">Action</span>
                               </button>
                                <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="{{ equip.edit_datacenter_equipment }}">View</a>
-                                <a class="dropdown-item" href="{% url 'create-repair' equip.asset.asset_id %}">Repair</a>
-                                <a class="dropdown-item" href="{% url 'dispose-asset' equip.asset.asset_id %}">Dispose</a>
+                                <a class="dropdown-item" href="{{ land.edit_land }}">View</a>
+{#                                <a class="dropdown-item" href="{% url 'create-repair' equip.asset.asset_id %}">Repair</a>#}
+                                <a class="dropdown-item" href="{{ land.dispose }}">Dispose</a>
                               </div>
                             </td>
                             {% endif %}

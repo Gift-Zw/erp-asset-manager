@@ -43,7 +43,7 @@
                           <tr>
                             <th><strong>#</strong></th>
                             <th><strong>Name</strong></th>
-                            <th><strong>Purchase Value</strong></th>
+                            <th><strong>Cost</strong></th>
                             <th><strong>Vendor</strong></th>
                             <th><strong>Category</strong></th>
                             <th><strong>Identification</strong></th>
@@ -55,7 +55,7 @@
                           <tr>
                             <td>{{ asset.asset_id }}</td>
                             <td>{{ asset.name }}</td>
-                            <td>${{ asset.purchase_value }}</td>
+                            <td>${{ asset.cost }}</td>
                             <td>{{ asset.vendor }}</td>
                               <td>
                                {% if asset.vehicle_details.mvd_id %}

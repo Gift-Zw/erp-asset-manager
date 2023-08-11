@@ -1,0 +1,104 @@
+{% include 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="wrapper">
+    {% include 'navbar.html' %}
+ <main role="main" class="main-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+                     {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+            <div class="col-12">
+              <h2 class="page-title">Add Furniture</h2>
+              <p class="text-muted">This is a form to add furniture Make sure you provide all the required fields. Serial Number must to be unique.</p>
+              <div class="card-deck">
+              </div> <!-- / .card-desk-->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card shadow mb-4">
+                    <div class="card-header">
+                      <strong class="card-title">All fields are required.</strong>
+                    </div>
+                    <div class="card-body">
+                      <form method="post">
+                          {% csrf_token %}
+                        <div class="form-row">
+                          <div class="form-group col-md-6">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                          </div>
+                            <div class="form-group col-md-4">
+                            <label for="assetClass">Asset Class</label>
+                            {{ form.asset_class }}
+                          </div>
+                        </div>
+                          <div class="form-row">
+                            <div class="form-group col-md-5">
+                            <label for="inputPhone">Asset Tag</label>
+                            {{ form.asset_tag }}
+                           {% for error in form.asset_tag.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                          </div>
+                             <div class="form-group col-md-4">
+                            <label for="warranty">Material</label>
+                            {{ form.material }}
+                          </div>
+                              <div class="form-group col-md-4">
+                            <label for="warrsaanty">Condition</label>
+                            {{ form.condition }}
+                          </div>
+                          </div>
+                        <div class="form-row">
+                           <div class="form-group col-md-3">
+                            <label for="inputValue">Cost</label>
+                            {{ form.cost }}
+                          </div>
+                          <div class="form-group col-md-3">
+                          <label for="inputCondition">Purchased Date</label>
+                          {{ form.purchase_date }}
+                              {% for error in form.purchase_date.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                        </div>
+                          </div>
+                          <div class="form-row">
+                             <div class="form-group col-md-4">
+                            <label for="inputCurrency">Source</label>
+                            {{ form.source}}
+                          </div>
+                              <div class="form-group col-md-4">
+                            <label for="deprecsacacs">Useful Life</label>
+                            {{ form.useful_life}}
+                          </div>
+                          </div>
+
+                        <button type="submit" class="btn btn-primary">Add Furniture</button>
+                      </form>
+                    </div> <!-- /. card-body -->
+                  </div> <!-- /. card -->
+                </div> <!-- /. col -->
+              </div> <!-- /. end-section -->
+             </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main>
+
+</div>
+
+{% include 'scripts.html' %}
+
+{% endblock content %}

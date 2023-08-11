@@ -1,0 +1,130 @@
+{% include 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="wrapper">
+    {% include 'navbar.html' %}
+ <main role="main" class="main-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+          {% if messages %}
+        {% for message in messages %}
+            <div class="col-12 mb-4">
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show " style="text-color:blue" role="alert">
+                {{ message }}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                 </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+            <div class="col-12">
+              <h2 class="page-title">Add Motor Vehicle</h2>
+              <p class="text-muted">This is a form to add motor vehicles. Make sure you provide all the required fields. Reg number, engine number and chassis number  must to be unique.</p>
+              <div class="card-deck">
+              </div> <!-- / .card-desk-->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card shadow mb-4">
+                    <div class="card-header">
+                      <strong class="card-title">All fields are required.</strong>
+                    </div>
+                    <div class="card-body">
+                      <form method="post">
+                          {% csrf_token %}
+                        <div class="form-row">
+                          <div class="form-group col-md-5">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                          </div>
+                            <div class="form-group col-md-4">
+                            <label for="assetClass">Asset Class</label>
+                            {{ form.asset_class }}
+                          </div>
+                        </div>
+                          <div class="form-row">
+                             <div class="form-group col-md-3">
+                            <label for="regNumber">Model</label>
+                            {{ form.model }}
+                          </div>
+                             <div class="form-group col-md-3">
+                            <label for="yearsa">Year</label>
+                            {{ form.year }}
+                          </div>
+                        </div>
+                          <div class="form-row">
+                            <div class="form-group col-md-5">
+                            <label for="inputPhone">Engine Number</label>
+                            {{ form.engine_number }}
+                              {% for error in form.engine_number.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                          </div>
+                             <div class="form-group col-md-3">
+                            <label for="chasisNdsaumber">Registration Number</label>
+                            {{ form.registration_number }}
+                                {% for error in form.registration_number.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                          </div>
+
+                          </div>
+                          <div class="form-row">
+                            <div class="form-group col-md-5">
+                            <label for="grvNumber">Manufacturer</label>
+                            {{ form.manufacturer }}
+                          </div>
+                          <div class="form-group col-md-4">
+                          <label for="inputCondition">Purchase Date</label>
+                          {{ form.purchase_date }}
+                                {% for error in form.purchase_date.errors %}
+                                <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                        </div>
+                          </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                            <label for="inputValue">Cost</label>
+                            {{ form.cost }}
+                          </div>
+                           <div class="form-group col-md-4">
+                            <label for="inputDuty">Duty Cost</label>
+                            {{ form.duty }}
+                          </div>
+                            <div class="form-group col-md-4">
+                            <label for="inputFreight">Freight Charges</label>
+                            {{ form.freight }}
+                          </div>
+
+                          </div>
+
+                      <div class="form-row">
+                            <div class="form-group col-md-4">
+                            <label for="example-date">Source</label>
+                            {{ form.source }}
+                            </div>
+                            <div class="form-group col-md-3">
+                            <label for="sfste">Useful life</label>
+                            {{ form.useful_life }}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Motor Vehicle</button>
+                      </form>
+                    </div> <!-- /. card-body -->
+                  </div> <!-- /. card -->
+                </div> <!-- /. col -->
+              </div> <!-- /. end-section -->
+             </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main>
+
+</div>
+
+{% include 'scripts.html' %}
+
+{% endblock content %}

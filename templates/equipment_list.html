@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load humanize %}
 {% block content %}
 
 <div class="wrapper">
@@ -24,16 +25,117 @@
             <div class="col-12">
               <h2 class="mb-2 page-title">Equipment</h2>
               <p class="card-text">This is a table containing all the equipment owned by the organization</p>
+
+
+
+                    <div class="row">
+
+                <div class="col-md-6 col-xl-4 mb-4">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-shopping-cart text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col pr-0">
+                          <p class="small text-muted mb-0">Total Cost Value</p>
+                          <span class="h4 mb-0">${{ total_value | floatformat:2 | intcomma }}</span>
+{#                          <span class="small text-danger">-16.5%</span>#}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-4 mb-4">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-tool text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col">
+                          <p class="small text-muted mb-0">Total Repairs</p>
+                          <div class="row align-items-center no-gutters">
+                            <div class="col-auto">
+                              <span class="h4 mr-2 mb-0">${{ total_repair | floatformat:2 | intcomma }}</span>
+                            </div>
+                            <div class="col-md-12 col-lg">
+                              <div class="progress progress-sm mt-2" style="height:3px">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-4 mb-4">
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-activity text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col">
+                          <p class="small text-muted mb-0">Accumulated Depreciation</p>
+                          <span class="h4 mb-0">${{ total_dep | floatformat:2 | intcomma}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div> <!-- end section -->
+
                 {% if request.user.is_admin %}
-                <div style="margin-left: 75%">
-                <a href="{% url 'create-datacenter-equip' %}" style="margin-right: 10px;">
-                 <button class="btn btn-primary">Add Asset</button>
+                <div style="margin-left: 60%">
+                <a href="{% url 'equipment-create' %}" style="margin-right: 15px;">
+                 <button class="btn btn-primary">Add Equipment</button>
+             </a>
+             <a href="#" style="margin-right: 15px;">
+                 <button class="btn btn-warning " data-toggle="modal" data-target="#varyModal" data-whatever="@mdo">Revaluate All Assets</button>
+
              </a>
 
-              <a href="{% url 'datacenter-equip-csv' %}">
-                 <button class="btn btn-success">Export CSV</button>
+              <a href="#">
+                 <button class="btn btn-success">Generate Dep Journal</button>
              </a>
                 </div>
+                    <div class="modal fade" id="varyModal" tabindex="-1" role="dialog" aria-labelledby="varyModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="varyModalLabel">Revaluate All Equipment</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <form action="{% url 'equipment-revaluate' %}" method="post" >
+                                  {% csrf_token %}
+                                <div class="form-group">
+                                  <label for="recipient-name" class="col-form-label">Revaluation Percentage</label>
+                                  {{ form.percentage }}
+                                </div>
+                                <div class="form-group">
+                                  <label for="message-text" class="col-form-label">Remarks</label>
+                                  {{ form.remarks }}
+                                </div>
+                                  <button type="submit" class="btn mb-2 btn-primary">Revaluate</button>
+                              </form>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn mb-2 btn-secondary" data-dismiss="modal">Close</button>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
             {% endif %}
                 <div class="row my-4">
                 <!-- Small table -->
@@ -47,53 +149,39 @@
                             <th>#</th>
                             <th><strong>Name</strong></th>
                             <th><strong>Serial Number</strong></th>
-                             <th><strong>GRV Number</strong></th>
-                            <th><strong>Purchase Value</strong></th>
-                            <th><strong>Current Valuation</strong></th>
-                            <th><strong>Warranty Status</strong></th>
-                            <th><strong>Vendor</strong></th>
+                             <th><strong>Asset Tag</strong></th>
+                            <th><strong>Cost</strong></th>
+                          <th><strong>Accumulated Depreciation</strong></th>
+                          <th><strong>Actual Value</strong></th>
                             <th><strong>Date Purchased</strong></th>
-                            <th><strong>Assignee</strong></th>
+                            <th><strong>Source</strong></th>
                               {% if request.user.is_admin %}
                             <th><strong>Action</strong></th>
                               {% endif %}
                           </tr>
                         </thead>
                         <tbody id="tbody">
-                        {% for equip in object_list %}
+                        {% for equip in equipments %}
                           <tr>
-                            <td>{{ equip.dcd_id }}</td>
-                            <td>{{ equip.asset.name }}</td>
+                            <td>{{ equip.asset_id }}</td>
+                          <td>{{ equip.name }}</td>
                             <td>{{ equip.serial_number }}</td>
-                          <td>{{ equip.asset.grv_number }}</td>
-                            <td>${{ equip.asset.purchase_value }}</td>
-                             <td>${{ equip.current_value }}</td>
-                              <td>
-                                  {% if equip.warranty_days > 30 %}
-                                    <h5><span class="badge badge-success"> Active </span></h5>
-                                  {% elif equip.warranty_days < 30 and equip.warranty_days >= 0  %}
-                                     <h5><span class="badge badge-warning">Critical</span></h5>
-                                  {% else %}
-                                      <h5><span class="badge badge-danger">Expired</span></h5>
-                                  {% endif %}
-                              </td>
-                            <td>{{ equip.asset.vendor }}</td>
-                            <td>{{ equip.asset.date_purchased }}</td>
-                            <td>
-                              {% if equip.asset.assignee %}
-                                  {{ equip.asset.assignee.full_name }}
-                                  {% else %}
-                                  Unassigned
-                              {% endif %}
-                          </td>
+                            <td>{{ equip.asset_tag }}</td>
+                            <td>${{ equip.cost | intcomma }}</td>
+                          <td>${{ equip.get_accumulated_depreciation | floatformat:2|default:"0.00" | intcomma }}</td>
+                          <td>${{ equip.net_book_value | floatformat:2|default:"0.00" | intcomma }}</td>
+                            <td>{{ equip.purchase_date }}</td>
+                          <td>{{ equip.source }}</td>
+
                           {% if request.user.is_admin %}
                             <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="text-muted sr-only">Action</span>
                               </button>
                                <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="{{ equip.edit_datacenter_equipment }}">View</a>
-                                <a class="dropdown-item" href="{% url 'create-repair' equip.asset.asset_id %}">Repair</a>
-                                <a class="dropdown-item" href="{% url 'dispose-asset' equip.asset.asset_id %}">Dispose</a>
+                                <a class="dropdown-item" href="{{ equip.edit_equipment }}">View</a>
+                                <a class="dropdown-item" href="{{ equip.repair }}">Repair</a>
+                                <a class="dropdown-item" href="{{ equip.dispose }}">Dispose</a>
+                                <a class="dropdown-item" href="{{ equip.transfer }}">Transfer</a>
                               </div>
                             </td>
                             {% endif %}

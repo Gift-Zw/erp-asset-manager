@@ -36,7 +36,7 @@
           <!-- nav bar -->
           <div class="w-100 mb-4 d-flex">
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="{% url 'home' %}">
-              <img src="{% static 'assets/images/logo.png' %}">
+              <img height="100px" src="{% static 'assets/images/cut_logo.jpg' %}">
             </a>
           </div>
           <ul class="navbar-nav flex-fill w-100 mb-2">
@@ -52,73 +52,96 @@
           </p>
           <ul class="navbar-nav flex-fill w-100 mb-2">
             <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'computer-equipment' %}">
+              <a class="nav-link" href="{% url 'building-list' %}">
+                <i class="fe fe-home fe-16"></i>
+                <span class="ml-3 item-text">Buildings</span>
+              </a>
+            </li>
+              <li class="nav-item w-100">
+              <a class="nav-link" href="{% url 'equipment-list' %}">
                 <i class="fe fe-monitor fe-16"></i>
-                <span class="ml-3 item-text">Computer Equipment</span>
+                <span class="ml-3 item-text">Equipment</span>
               </a>
             </li>
             <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'data-center' %}">
-                <i class="fe fe-cloud fe-16"></i>
-                <span class="ml-3 item-text">Data Center</span>
+              <a class="nav-link" href="{% url 'fixture-list' %}">
+                <i class="fe fe-sidebar fe-16"></i>
+                <span class="ml-3 item-text">Fixtures</span>
+              </a>
+            </li>
+              <li class="nav-item w-100">
+              <a class="nav-link" href="{% url 'furniture-list' %}">
+                <i class="fe fe-tv fe-16"></i>
+                <span class="ml-3 item-text">Furniture</span>
               </a>
             </li>
             <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'office-equipment' %}">
-                <i class="fe fe-printer fe-16"></i>
-                <span class="ml-3 item-text">Office Equipment</span>
-              </a>
-            </li>
-            <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'fixture-fittings' %}">
+              <a class="nav-link" href="{% url 'land-list' %}">
                 <i class="fe fe-layers fe-16"></i>
-                <span class="ml-3 item-text">Fixture and Fittings</span>
+                <span class="ml-3 item-text">Land</span>
               </a>
             </li>
+
             <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'motor-vehicles' %}">
+              <a class="nav-link" href="{% url 'machinery-list' %}">
+                <i class="fe fe-sliders fe-16"></i>
+                <span class="ml-3 item-text">Machinery</span>
+              </a>
+            </li>
+              <li class="nav-item w-100">
+              <a class="nav-link" href="{% url 'motor-vehicle-list' %}">
                 <i class="fe fe-truck fe-16"></i>
                 <span class="ml-3 item-text">Motor Vehicles</span>
               </a>
             </li>
 
           </ul>
+
           <p class="text-muted nav-heading mt-4 mb-1">
             <span>Apps</span>
           </p>
           <ul class="navbar-nav flex-fill w-100 mb-2">
-          <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'all-repairs' %}">
+              <li class="nav-item dropdown">
+              <a href="#dispose" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav-link">
+                <i class="fe fe-trash fe-16"></i>
+                <span class="ml-3 item-text">Disposals</span>
+              </a>
+              <ul class="collapse list-unstyled pl-4 w-100" id="dispose">
+                <a class="nav-link pl-3" href="{% url 'pending-disposal' %}"><span class="ml-1">Pending</span></a>
+                <a class="nav-link pl-3" href="{% url 'approved-disposal' %}"><span class="ml-1">Approved</span></a>
+                  <a class="nav-link pl-3" href="{% url 'rejected-disposal' %}"><span class="ml-1">Rejected</span></a>
+              </ul>
+            </li>
+              <li class="nav-item dropdown">
+              <a href="#repairs" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav-link">
                 <i class="fe fe-tool fe-16"></i>
                 <span class="ml-3 item-text">Repairs</span>
               </a>
+              <ul class="collapse list-unstyled pl-4 w-100" id="repairs">
+                <a class="nav-link pl-3" href="{% url 'repair-pending' %}"><span class="ml-1">Pending</span></a>
+                <a class="nav-link pl-3" href="{% url 'repair-approved' %}"><span class="ml-1">Approved</span></a>
+                  <a class="nav-link pl-3" href="{% url 'repair-rejected' %}"><span class="ml-1">Rejected</span></a>
+              </ul>
             </li>
-             <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'vendors' %}">
-                <i class="fe fe-shopping-cart fe-16"></i>
-                <span class="ml-3 item-text">Vendors</span>
-              </a>
-            </li>
-           <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'transfers' %}">
-                <i class="fe fe-share fe-16"></i>
+              <li class="nav-item dropdown">
+              <a href="#transfers" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav-link">
+                <i class="fe fe-refresh-ccw fe-16"></i>
                 <span class="ml-3 item-text">Transfers</span>
               </a>
+              <ul class="collapse list-unstyled pl-4 w-100" id="transfers">
+                <a class="nav-link pl-3" href="{% url 'transfer-pending' %}"><span class="ml-1">Pending</span></a>
+                <a class="nav-link pl-3" href="{% url 'transfer-approved' %}"><span class="ml-1">Approved</span></a>
+                  <a class="nav-link pl-3" href="{% url 'transfer-rejected' %}"><span class="ml-1">Rejected</span></a>
+              </ul>
             </li>
-{#             <li class="nav-item w-100">#}
-{#              <a class="nav-link" href="">#}
-{#                <i class="fe fe-trending-down fe-16"></i>#}
-{#                <span class="ml-3 item-text">Depreciation</span>#}
-{#              </a>#}
-{#            </li>#}
-            <li class="nav-item dropdown">
-            <li class="nav-item w-100">
-              <a class="nav-link" href="{% url 'disposed' %}">
-                <i class="fe fe-trash fe-16"></i>
-                <span class="ml-3 item-text">Disposed Assets</span>
+              <li>
+                  <a class="nav-link" href="{% url 'revaluation-history' %}">
+                <i class="fe fe-activity fe-16"></i>
+                <span class="ml-3 item-text">Revaluation History</span>
               </a>
-            </li>
+              </li>
           </ul>
+
 
 
 
@@ -126,47 +149,15 @@
             <span>System</span>
           </p>
           <ul class="navbar-nav flex-fill w-100 mb-2">
-{#            <li class="nav-item dropdown">#}
-{#              <a href="#pages" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav-link">#}
-{#                <i class="fe fe-file fe-16"></i>#}
-{#                <span class="ml-3 item-text">Reports</span>#}
-{#              </a>#}
-{#              <ul class="collapse list-unstyled pl-4 w-100 w-100" id="pages">#}
-{#                <li class="nav-item">#}
-{#                  <a class="nav-link pl-3" href="./page-orders.html">#}
-{#                    <span class="ml-1 item-text">Orders</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#                <li class="nav-item">#}
-{#                  <a class="nav-link pl-3" href="./page-timeline.html">#}
-{#                    <span class="ml-1 item-text">Timeline</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#                <li class="nav-item">#}
-{#                  <a class="nav-link pl-3" href="./page-invoice.html">#}
-{#                    <span class="ml-1 item-text">Invoice</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#                <li class="nav-item">#}
-{#                  <a class="nav-link pl-3" href="./page-404.html">#}
-{#                    <span class="ml-1 item-text">Page 404</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#                <li class="nav-item">#}
-{#                  <a class="nav-link pl-3" href="./page-500.html">#}
-{#                    <span class="ml-1 item-text">Page 500</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#                <li class="nav-item">#}
-{#                  <a class="nav-link pl-3" href="./page-blank.html">#}
-{#                    <span class="ml-1 item-text">Blank</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#              </ul>#}
-{#            </li>#}
-            {% if request.user.is_manager %}
+              <li>
+                  <a class="nav-link" href="{% url 'asset-classes' %}">
+                <i class="fe fe-tool fe-16"></i>
+                <span class="ml-3 item-text">Asset Classes</span>
+              </a>
+              </li>
+
              <li class="nav-item ">
-              <a href="#" class="nav-link">
+              <a href="{% url 'user-list' %}" class="nav-link">
                 <i class="fe fe-users fe-16"></i>
                 <span class="ml-3 item-text">Users</span>
               </a>
@@ -178,7 +169,6 @@
               </a>
             </li>
 
-              {% endif %}
             <li class="nav-item ">
               <a href="{% url 'logOut' %}"  class="nav-link">
                 <i class="fe fe-log-out fe-16"></i>

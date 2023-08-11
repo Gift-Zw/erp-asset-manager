@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (BaseAsset, Vendor, Room, Department, Land, Building, MotorVehicle, Machinery, Furniture, Equipment,
-                     Fixture, AssetDisposal, AssetRepair, AssetTransfer, DepreciationEntry
+                     Fixture, AssetDisposal, AssetRepair, AssetTransfer, DepreciationEntry, AssetClassProperties
                      )
 
 # Register your models here.
@@ -22,44 +22,42 @@ class RoomAdmin(admin.ModelAdmin):
 
 
 class LandAdmin(admin.ModelAdmin):
-    list_display = ['name', 'area', 'registered_owner', 'purchase_value', 'purchase_date', 'useful_life',
-                    'depreciation_rate', 'depreciation_method', 'last_depreciation_date', 'accumulated_depreciation',
+    list_display = ['name', 'area', 'registered_owner', 'cost', 'purchase_date', 'useful_life', 'last_depreciation_date', 'accumulated_depreciation',
                     'is_disposed']
 
 
 class BuildingAdmin(admin.ModelAdmin):
-    list_display = ['name', 'purchase_value', 'purchase_date', 'construction_date', 'address', 'building_type',
-                    'floor_area', 'number_of_floors', 'useful_life', 'depreciation_rate', 'depreciation_method',
+    list_display = ['name', 'cost', 'purchase_date', 'construction_date', 'address', 'building_type',
+                    'floor_area', 'number_of_floors', 'useful_life',
                     'last_depreciation_date', 'accumulated_depreciation', 'is_disposed']
 
 
 class MotorVehicleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'purchase_value', 'purchase_date', 'duty', 'freight', 'registration_number',
-                    'engine_number', 'manufacturer', 'model', 'year', 'useful_life', 'depreciation_rate',
-                    'depreciation_method', 'last_depreciation_date', 'accumulated_depreciation', 'is_disposed']
+    list_display = ['name', 'cost', 'purchase_date', 'duty', 'freight', 'registration_number',
+                    'engine_number', 'manufacturer', 'model', 'year', 'useful_life',  'last_depreciation_date', 'accumulated_depreciation', 'is_disposed']
 
 
 class FurnitureAdmin(admin.ModelAdmin):
-    list_display = ['name', 'asset_tag', 'material', 'condition', 'purchase_value', 'purchase_date', 'useful_life',
-                    'depreciation_rate', 'depreciation_method', 'last_depreciation_date', 'accumulated_depreciation',
+    list_display = ['name', 'asset_tag', 'material', 'condition', 'cost', 'purchase_date', 'useful_life',
+              'last_depreciation_date', 'accumulated_depreciation',
                     'is_disposed']
 
 
 class MachineryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'purchase_value', 'serial_number', 'manufacturer', 'model', 'capacity', 'purchase_date',
-                    'useful_life', 'depreciation_rate', 'depreciation_method', 'last_depreciation_date',
+    list_display = ['name', 'cost', 'serial_number', 'manufacturer', 'model', 'capacity', 'purchase_date',
+                    'useful_life', 'last_depreciation_date',
                     'accumulated_depreciation', 'is_disposed']
 
 
 class EquipmentAdmin(admin.ModelAdmin):
-    list_display = ['name', 'purchase_value', 'serial_number', 'manufacturer', 'model', 'asset_tag', 'purchase_date',
-                    'useful_life', 'depreciation_rate', 'depreciation_method', 'last_depreciation_date',
+    list_display = ['name', 'cost', 'serial_number', 'manufacturer', 'model', 'asset_tag', 'purchase_date',
+                    'useful_life', 'last_depreciation_date',
                     'accumulated_depreciation', 'is_disposed']
 
 
 class FixtureAdmin(admin.ModelAdmin):
-    list_display = ['name', 'purchase_value', 'asset_tag', 'location', 'purchase_date', 'useful_life',
-                    'depreciation_rate', 'depreciation_method', 'last_depreciation_date', 'accumulated_depreciation',
+    list_display = ['name', 'cost', 'asset_tag', 'location', 'purchase_date', 'useful_life',
+                     'last_depreciation_date', 'accumulated_depreciation',
                     'is_disposed']
 
 
@@ -96,3 +94,4 @@ admin.site.register(AssetRepair, RepairAdmin)
 admin.site.register(DepreciationEntry, DepreciationAdmin)
 admin.site.register(AssetTransfer, TransferAdmin)
 admin.site.register(Room, RoomAdmin)
+admin.site.register(AssetClassProperties)

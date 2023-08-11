@@ -13,7 +13,7 @@ DEPARTMENTS = [
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name, department, password=None):
+    def create_user(self, email, first_name, last_name, password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -25,14 +25,13 @@ class MyUserManager(BaseUserManager):
             email=self.normalize_email(email),
             first_name=first_name,
             last_name=last_name,
-            department=department
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, first_name, last_name, department, password):
+    def create_superuser(self, email, first_name, last_name, password):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
@@ -42,7 +41,6 @@ class MyUserManager(BaseUserManager):
             password=password,
             first_name=first_name,
             last_name=last_name,
-            department=department
         )
         user.is_admin = True
         user.save(using=self._db)
@@ -57,7 +55,6 @@ class User(AbstractBaseUser):
     )
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255, blank=True)
-    department = models.CharField(max_length=255, choices=DEPARTMENTS, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -66,7 +63,7 @@ class User(AbstractBaseUser):
     objects = MyUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'department']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def has_perm(self, perm, obj=None):
 
