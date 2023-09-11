@@ -31,7 +31,7 @@ from core.views import (
     EquipmentCreateView, EquipmentUpdateView, EquipmentListView, EquipmentDisposalView, EquipmentRepairView, EquipmentRevaluateAssetsView, EquipmentTransferView,
     FixtureCreateView, FixtureUpdateView, FixtureListView, FixtureDisposalView, FixtureRepairView, FixtureRevaluateAssetsView, FixtureTransferView,
     error_404_view, error_500_view, logout_view, PendingDisposalListView, ApprovedDisposalListView, AssetDisposalRejectionView, RejectedDisposalListView,
-    ApprovedRepairListView, PendingRepairListView, RepairAssetApprovalView, UserListView, AssetClassesListView, RevaluationHistoryListView, PendingTransfersListView, ApprovedTransfersListView, TransferApprovalView, TransferRejectionView, RejectedTransfersListView, RejectedRepairListView, RepairAssetRejectionView
+    ApprovedRepairListView, PendingRepairListView, RepairAssetApprovalView, UserListView, AssetClassesListView, RevaluationHistoryListView, PendingTransfersListView, ApprovedTransfersListView, TransferApprovalView, TransferRejectionView, RejectedTransfersListView, RejectedRepairListView, RepairAssetRejectionView, LogsListView
 )
 
 urlpatterns = [
@@ -145,28 +145,11 @@ urlpatterns = [
     # Depreciation
     path('asset-classes/', AssetClassesListView.as_view(), name='asset-classes'),
 
-    path('revaluation/', RevaluationHistoryListView.as_view(), name="revaluation-history")
+    path('revaluation/', RevaluationHistoryListView.as_view(), name="revaluation-history"),
 
-    # path('my-assets', MyAssetsView.as_view(), name="my-assets"),
-    # path('motor-vehicles', MotorVehiclesView.as_view(), name="motor-vehicles"),
-    # path('fixture-fittings', FixtureAndFittingsView.as_view(), name="fixture-fittings"),
-    # path('office-equipment', OfficeEquipView.as_view(), name="office-equipment"),
-    # path('data-center', DataCenterView.as_view(), name="data-center"),
-    # path('computer-equipment', ComputerEquipView.as_view(), name="computer-equipment"),
-    # path('repairs', MyRepairsView.as_view(), name="repairs"),
-    # path('all-repairs', AllRepairsView.as_view(), name="all-repairs"),
-    # path('users', users_view, name="users"),
-    # path('create-repair/<int:asset_id>', RepairUploadView.as_view(), name="create-repair"),
-    # path('update-repair/<int:pk>', RepairUpdateView.as_view(), name="update-repair"),
-    # path('transfers', TransferView.as_view(), name="transfers"),
-    # path('logs', logs_view, name="logs"),
-    # path('disposed-assets', DisposedAssetsView.as_view(), name="disposed"),
-    # path('vendors', VendorView.as_view(), name="vendors"),
-    # path('create-vendor', VendorUploadView.as_view(), name="create-vendor"),
-    # path('delete-vendor/<int:id>', delete_vendor, name="delete-vendor"),
-    # path('create-datacenter-equip', DataCenterUploadView.as_view(), name="create-datacenter-equip"),
-    # path('update-datacenter-equip/<int:pk>-<str:serial_number>', DataCenterUpdateView.as_view(),
-    #      name="update-datacenter-equip"),
+    # Logs
+    path('logs/', LogsListView.as_view(), name="logs")
+
     # path('dispose-asset/<int:asset_id>', DisposalView.as_view(), name="dispose-asset"),
     # path('computer-equip-csv', comp_equip_csv, name="computer-equip-csv"),
     # path('datacenter-equip-csv', datacenter_csv, name="datacenter-equip-csv"),

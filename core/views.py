@@ -1,6 +1,7 @@
 import json
 from decimal import Decimal
 
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
@@ -17,7 +18,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.db.models import Count, Q, Sum
 from django.contrib import messages
 from core import revaluation
-
+from auditlog.mixins import LogAccessMixin
+from auditlog.models import LogEntry
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
 
@@ -40,7 +42,7 @@ def calculate_acc_dep(model: BaseAsset):
 
 
 def calculate_total_cost(model: BaseAsset):
-    cost = model.objects.filter(is_disposed=False).aggregate(total=Sum('cost')).get('total', 0)
+    cost = model.objects.filter(is_disposed=False,).aggregate(total=Sum('cost')).get('total', 0)
     return cost or 0
 
 
@@ -53,6 +55,8 @@ def calculate_total_repair(model: BaseAsset):
 
 @login_required
 def index(request):
+    logs = LogEntry.objects.all()
+    print(logs)
     building_acc_dep = calculate_acc_dep(Building)
     nbv_buildings = calculate_total_cost(Building) - building_acc_dep
     nbv_land = calculate_total_cost(Land)
@@ -147,7 +151,7 @@ class RoomCreateView(BaseCreateView):
     success_url = reverse_lazy('room-list')
 
 
-class RoomUpdateView(BaseUpdateView):
+class RoomUpdateView(LogAccessMixin, BaseUpdateView):
     model = Room
     form_class = RoomForm
     template_name = 'forms/update_room.html'
@@ -168,7 +172,7 @@ class DepartmentCreateView(BaseCreateView):
     success_url = reverse_lazy('department-list')
 
 
-class DepartmentUpdateView(BaseUpdateView):
+class DepartmentUpdateView(LogAccessMixin, BaseUpdateView):
     model = Department
     form_class = DepartmentForm
     template_name = 'forms/update_department.html'
@@ -189,7 +193,7 @@ class LandCreateView(BaseCreateView):
     success_url = reverse_lazy('land-list')
 
 
-class LandUpdateView(BaseUpdateView):
+class LandUpdateView(LogAccessMixin, BaseUpdateView):
     model = Land
     form_class = LandForm
     template_name = 'forms/update_land.html'
@@ -263,7 +267,7 @@ class FixtureCreateView(BaseCreateView):
     success_url = reverse_lazy('fixture-list')
 
 
-class FixtureUpdateView(BaseUpdateView):
+class FixtureUpdateView(LogAccessMixin, BaseUpdateView):
     model = Fixture
     form_class = FixtureForm
     template_name = 'forms/update_fixture.html'
@@ -380,7 +384,7 @@ class BuildingCreateView(BaseCreateView):
     success_url = reverse_lazy('building-list')
 
 
-class BuildingUpdateView(BaseUpdateView):
+class BuildingUpdateView(LogAccessMixin, BaseUpdateView):
     model = Building
     form_class = BuildingForm
     template_name = 'forms/update_building.html'
@@ -497,7 +501,7 @@ class MotorVehicleCreateView(BaseCreateView):
     success_url = reverse_lazy('motor-vehicle-list')
 
 
-class MotorVehicleUpdateView(BaseUpdateView):
+class MotorVehicleUpdateView(LogAccessMixin, BaseUpdateView):
     model = MotorVehicle
     form_class = MotorVehicleForm
     template_name = 'forms/update_motor_vehicles.html'
@@ -614,7 +618,7 @@ class MachineryCreateView(BaseCreateView):
     success_url = reverse_lazy('machinery-list')
 
 
-class MachineryUpdateView(BaseUpdateView):
+class MachineryUpdateView(LogAccessMixin, BaseUpdateView):
     model = Machinery
     form_class = MachineryForm
     template_name = 'forms/update_machinery.html'
@@ -731,7 +735,7 @@ class FurnitureCreateView(BaseCreateView):
     success_url = reverse_lazy('furniture-list')
 
 
-class FurnitureUpdateView(BaseUpdateView):
+class FurnitureUpdateView(LogAccessMixin, BaseUpdateView):
     model = Furniture
     form_class = FurnitureForm
     template_name = 'forms/update_furniture.html'
@@ -848,7 +852,7 @@ class EquipmentCreateView(BaseCreateView):
     success_url = reverse_lazy('equipment-list')
 
 
-class EquipmentUpdateView(BaseUpdateView):
+class EquipmentUpdateView(LogAccessMixin, BaseUpdateView):
     model = Equipment
     form_class = EquipmentForm
     template_name = 'forms/update_equipment.html'
@@ -993,6 +997,13 @@ class RejectedRepairListView(BaseListView):
     template_name = 'repairs_rejected.html'
     context_object_name = 'repairs'
     queryset = AssetRepair.objects.filter(is_rejected=True)
+
+
+class LogsListView(BaseListView):
+    model = LogEntry
+    template_name = 'logs.html'
+    context_object_name = 'logs'
+    queryset = LogEntry.objects.all().order_by('-timestamp')
 
 
 

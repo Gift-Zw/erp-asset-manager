@@ -36,7 +36,7 @@
           <!-- nav bar -->
           <div class="w-100 mb-4 d-flex">
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="{% url 'home' %}">
-              <img height="100px" src="{% static 'assets/images/cut_logo.jpg' %}">
+              <img height="100px" src="{% static 'assets/images/logo.svg' %}">
             </a>
           </div>
           <ul class="navbar-nav flex-fill w-100 mb-2">
@@ -163,7 +163,7 @@
               </a>
             </li>
             <li class="nav-item ">
-              <a href="#" class="nav-link">
+              <a href="{% url 'logs' %}" class="nav-link">
                 <i class="fe fe-activity fe-16"></i>
                 <span class="ml-3 item-text">Logs</span>
               </a>
